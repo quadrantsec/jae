@@ -33,7 +33,9 @@ struct _Counters
     uint32_t	rules;
 
     uint32_t	processor_bluedot_skip;
-    uint32_t 	processor_bluedot_ip_queue;
+
+    uint16_t 	processor_bluedot_ip_queue;
+    uint64_t 	processor_bluedot_ip_cache;
 
 
 };

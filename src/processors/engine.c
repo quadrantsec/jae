@@ -57,9 +57,10 @@ void Engine( struct _JSON_Key_String *JSON_Key_String, uint16_t json_count )
 {
 
     uint32_t rule_position = 0;
-    uint16_t a = 0;
-    uint16_t match = 0;
+    uint16_t json_position = 0; 
     uint8_t s_position = 0;
+
+    uint16_t match = 0;
     bool results = false;
 
     for ( rule_position = 0; rule_position < Counters->rules; rule_position++ )
@@ -88,7 +89,7 @@ void Engine( struct _JSON_Key_String *JSON_Key_String, uint16_t json_count )
                     json_count = Normalize( JSON_Key_String, json_count, rule_position );
                 }
 
-            for ( a = 0; a < json_count; a++ )
+            for ( json_position = 0; json_position < json_count; json_position++ )
                 {
 
                     /* search */
@@ -96,9 +97,9 @@ void Engine( struct _JSON_Key_String *JSON_Key_String, uint16_t json_count )
                     for ( s_position = 0; s_position < Rules[rule_position].search_string_count; s_position++ )
                         {
 
-                            if ( !strcmp(JSON_Key_String[a].key, Rules[rule_position].search_key[s_position]) )
+                            if ( !strcmp(JSON_Key_String[json_position].key, Rules[rule_position].search_key[s_position]) )
                                 {
-                                    if ( Search( rule_position, s_position, JSON_Key_String[a].json ) == true )
+                                    if ( Search( rule_position, s_position, JSON_Key_String[json_position].json ) == true )
                                         {
                                             match++;
                                         }
@@ -111,10 +112,10 @@ void Engine( struct _JSON_Key_String *JSON_Key_String, uint16_t json_count )
                     for ( s_position = 0; s_position < Rules[rule_position].pcre_count; s_position++ )
                         {
 
-                            if ( !strcmp(JSON_Key_String[a].key, Rules[rule_position].pcre_key[s_position] ))
+                            if ( !strcmp(JSON_Key_String[json_position].key, Rules[rule_position].pcre_key[s_position] ))
                                 {
 
-                                    if ( Pcre( rule_position, s_position, JSON_Key_String[a].json ) == true )
+                                    if ( Pcre( rule_position, s_position, JSON_Key_String[json_position].json ) == true )
                                         {
                                             match++;
                                         }
@@ -131,7 +132,7 @@ void Engine( struct _JSON_Key_String *JSON_Key_String, uint16_t json_count )
                                 {
 
 
-                                    if ( !strcmp(JSON_Key_String[a].key, Rules[rule_position].bluedot_key[s_position] ) )
+                                    if ( !strcmp(JSON_Key_String[json_position].key, Rules[rule_position].bluedot_key[s_position] ) )
                                         {
 
                                             /* DONT LIKE THIS AT ALL - If bluedot is enabled,  add query
@@ -140,7 +141,7 @@ void Engine( struct _JSON_Key_String *JSON_Key_String, uint16_t json_count )
                                                of results */
 
 
-                                            if ( Bluedot( rule_position, s_position, JSON_Key_String[a].json ) == true )
+                                            if ( Bluedot( JSON_Key_String, rule_position, s_position, json_position ) == true )
                                                 {
                                                     printf("BLUEDOT MATCH\n");
                                                     match++;

@@ -1,1 +1,1 @@
-#define VERSION "3.0.0-git"
+#define VERSION "0.0.0-git"

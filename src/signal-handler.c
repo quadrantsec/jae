@@ -80,7 +80,7 @@ void Signal_Handler( void )
 
 
                 default:
-                    JAE_Log(NORMAL, "[Received signal %d. Sagan doesn't know how to deal with]", sig);
+                    JAE_Log(NORMAL, "[Received signal %d. JAE doesn't know how to deal with]", sig);
 
                 }
 

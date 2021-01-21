@@ -41,7 +41,11 @@
 #include "debug.h"
 #include "counters.h"
 
+#include "parsers/json.h"
+
 #include "processors/bluedot.h"
+
+
 
 struct _Rules *Rules;
 struct _Debug *Debug;
@@ -49,8 +53,11 @@ struct _Config *Config;
 struct _Counters *Counters;
 struct _Bluedot_Skip *Bluedot_Skip;
 
-pthread_mutex_t JAE_DNS_Mutex=PTHREAD_MUTEX_INITIALIZER;
 
+struct _Bluedot_IP_Cache *BluedotIPCache = NULL;
+
+
+pthread_mutex_t JAE_DNS_Mutex=PTHREAD_MUTEX_INITIALIZER;
 
 pthread_mutex_t JAEBluedotIPWorkMutex=PTHREAD_MUTEX_INITIALIZER;		// IP queue
 
@@ -61,7 +68,7 @@ bool bluedot_dns_global = 0;
 void Bluedot_Init( void )
 {
 
-    /* IP Queue */
+    /* IP Queue & Cache */
 
     if ( Config->processor_bluedot_ip_queue > 0 )
         {
@@ -74,13 +81,25 @@ void Bluedot_Init( void )
                 }
 
             memset(BluedotIPQueue, 0, Config->processor_bluedot_ip_queue * sizeof(_Bluedot_IP_Queue));
+
+	BluedotIPCache = malloc( BLUEDOT_DEFAULT_MEMORY_SLOTS * sizeof(struct _Bluedot_IP_Cache));
+
+        if ( BluedotIPCache == NULL )
+                {
+                    JAE_Log(ERROR, "[%s, line %d] Failed to allocate memory for _Bluedot_IP_Cache. Abort!", __FILE__, __LINE__);
+                }
+
+            memset(BluedotIPCache, 0, BLUEDOT_DEFAULT_MEMORY_SLOTS * sizeof(_Bluedot_IP_Cache));
+
         }
 
 }
 
 
-bool Bluedot( uint32_t rule_position, uint8_t s_position, char *json )
+bool Bluedot( struct _JSON_Key_String *JSON_Key_String, uint32_t rule_position, uint8_t s_position, uint16_t json_position )
 {
+
+    printf("|%s|\n", JSON_Key_String[json_position].json);
 
     char timet[20] = { 0 };
     time_t t;
@@ -99,11 +118,14 @@ bool Bluedot( uint32_t rule_position, uint8_t s_position, char *json )
     uint64_t epoch_time = atol(timet);
     uint64_t i = 0;
 
-    char buff[1024] = { 0 };
+    char buff[BLUEDOT_JSON_SIZE] = { 0 };
+
+    unsigned char ip_convert[MAX_IP_BIT_SIZE] = { 0 };
+
 
     char *jsonptr = NULL;
     char *jsonptr_f = NULL;
-    char json_final[1024] = { 0 };
+    char json_final[BLUEDOT_JSON_SIZE] = { 0 };
 
     const char *cdate_utime = NULL;
     uint32_t cdate_utime_u32 = 0;
@@ -111,10 +133,9 @@ bool Bluedot( uint32_t rule_position, uint8_t s_position, char *json )
     const char *mdate_utime = NULL;
     uint32_t mdate_utime_u32 = 0;
 
-
     /* If we have "NOT_FOUND", we can skip this */
 
-    if ( json[0] == 'N' )
+    if ( JSON_Key_String[json_position].json[0] == 'N' )
         {
             return(false);
         }
@@ -165,18 +186,18 @@ bool Bluedot( uint32_t rule_position, uint8_t s_position, char *json )
     if ( Rules[rule_position].bluedot_type[s_position] == BLUEDOT_TYPE_IP )
         {
 
-            unsigned char ip_convert[MAX_IP_BIT_SIZE] = { 0 };
+//            unsigned char ip_convert[MAX_IP_BIT_SIZE] = { 0 };
 
-            IP_2_Bit(json, ip_convert);
+            IP_2_Bit(JSON_Key_String[json_position].json, ip_convert);
 
             /* Don't look up non-routed stuff */
 
-            if ( Is_Not_Routable(ip_convert) || !strcmp(json, "0.0.0.0" ) )
+    	      if ( Is_Not_Routable(ip_convert) || JSON_Key_String[json_position].json[0] == '0' )
                 {
 
                     if ( Debug->bluedot )
                         {
-                            JAE_Log(DEBUG, "[%s, line %d] %s is RFC1918, link local or invalid.", __FILE__, __LINE__, json);
+                            JAE_Log(DEBUG, "[%s, line %d] %s is RFC1918, link local or invalid.", __FILE__, __LINE__, JSON_Key_String[json_position].json);
                         }
 
                     return(false);
@@ -192,7 +213,7 @@ bool Bluedot( uint32_t rule_position, uint8_t s_position, char *json )
 
                             if ( Debug->bluedot )
                                 {
-                                    JAE_Log(DEBUG, "[%s, line %d] IP address %s is in Bluedot 'skip_networks'. Skipping lookup.", __FILE__, __LINE__, json);
+                                    JAE_Log(DEBUG, "[%s, line %d] IP address %s is in Bluedot 'skip_networks'. Skipping lookup.", __FILE__, __LINE__, JSON_Key_String[json_position].json);
                                 }
 
                             return(false);
@@ -200,7 +221,32 @@ bool Bluedot( uint32_t rule_position, uint8_t s_position, char *json )
 
                 }
 
-            /* Check cache */
+	    /* Check IP cache,  see if we already have the entry */
+
+            for (i=0; i<Counters->processor_bluedot_ip_cache; i++)
+              {
+
+              if (!memcmp( ip_convert, BluedotIPCache[i].ip, MAX_IP_BIT_SIZE ))
+                     {
+
+                     if (Debug->bluedot)
+                        {
+                        JAE_Log(DEBUG, "[%s, line %d] Pulled %s from Bluedot cache with category of \"%d\". [cdate_epoch: %d / mdate_epoch: %d]", __FILE__, __LINE__, JSON_Key_String[json_position].json, BluedotIPCache[i].alertid, BluedotIPCache[i].cdate_utime, BluedotIPCache[i].mdate_utime);
+                         }
+
+
+
+
+
+		     return(true);
+		     }
+
+
+	      }
+
+
+
+            /* Check IP queue */
 
             for ( i =0; i < Config->processor_bluedot_ip_queue; i++ )
                 {
@@ -209,7 +255,7 @@ bool Bluedot( uint32_t rule_position, uint8_t s_position, char *json )
                         {
                             if (Debug->bluedot)
                                 {
-                                    JAE_Log(DEBUG, "[%s, line %d] %s is already being looked up. Skipping....", __FILE__, __LINE__, json);
+                                    JAE_Log(DEBUG, "[%s, line %d] %s is already being looked up. Skipping....", __FILE__, __LINE__, JSON_Key_String[json_position].json);
                                 }
 
                             return(false);
@@ -225,6 +271,7 @@ bool Bluedot( uint32_t rule_position, uint8_t s_position, char *json )
                     return(false);
                 }
 
+	    /* Added entry to queue */
 
             for (i=0; i < Config->processor_bluedot_ip_queue; i++)
                 {
@@ -245,7 +292,7 @@ bool Bluedot( uint32_t rule_position, uint8_t s_position, char *json )
                         }
                 }
 
-            snprintf(buff, sizeof(buff), "GET /%s%s%s HTTP/1.1\r\nHost: %s\r\n%s\r\nX-BLUEDOT-DEVICEID: %s\r\nConnection: close\r\n\r\n", Config->processor_bluedot_uri, BLUEDOT_IP_LOOKUP_URL, json, Config->processor_bluedot_host, BLUEDOT_USER_AGENT, Config->processor_bluedot_device_id);
+            snprintf(buff, sizeof(buff), "GET /%s%s%s HTTP/1.1\r\nHost: %s\r\n%s\r\nX-BLUEDOT-DEVICEID: %s\r\nConnection: close\r\n\r\n", Config->processor_bluedot_uri, BLUEDOT_IP_LOOKUP_URL, JSON_Key_String[json_position].json, Config->processor_bluedot_host, BLUEDOT_USER_AGENT, Config->processor_bluedot_device_id);
 
         }
 
@@ -301,7 +348,7 @@ bool Bluedot( uint32_t rule_position, uint8_t s_position, char *json )
 
     /* Lookup is complete,  remove from queue */
 
-    Bluedot_Clean_Queue ( json, Rules[rule_position].bluedot_type[s_position] );
+    Bluedot_Clean_Queue ( JSON_Key_String[json_position].json, Rules[rule_position].bluedot_type[s_position] );
 
     strtok_r( buff, "{", &jsonptr);
     jsonptr_f = strtok_r( NULL, "{", &jsonptr);
@@ -364,6 +411,38 @@ bool Bluedot( uint32_t rule_position, uint8_t s_position, char *json )
         }
 
 
+	/* Do we have cache space? If not allocate more! */
+
+
+    /* Add entries to cache */
+
+    if ( Rules[rule_position].bluedot_type[s_position] == BLUEDOT_TYPE_IP )
+    {
+
+    	pthread_mutex_lock(&JAEBluedotIPWorkMutex);
+
+	memcpy(BluedotIPCache[Counters->processor_bluedot_ip_cache].ip, ip_convert, MAX_IP_BIT_SIZE);
+	strlcpy(BluedotIPCache[Counters->processor_bluedot_ip_cache].json, json_final, sizeof(BluedotIPCache[Counters->processor_bluedot_ip_cache].json));
+        BluedotIPCache[Counters->processor_bluedot_ip_cache].cache_utime = epoch_time;                   /* store utime */
+        BluedotIPCache[Counters->processor_bluedot_ip_cache].cdate_utime = cdate_utime_u32;
+        BluedotIPCache[Counters->processor_bluedot_ip_cache].mdate_utime = mdate_utime_u32;
+//        BluedotIPCache[Counters->processor_bluedot_ip_cache].alertid = bluedot_alertid;
+//	Counters->processor_bluedot_ip_cache
+
+
+	/* Bluedot mtime/ctime goes here */
+
+
+        // Counters->processors_bluedot_ip_total++ // STATS go here
+	Counters->processor_bluedot_ip_cache++; 
+
+	pthread_mutex_unlock(&JAEBluedotIPWorkMutex);
+
+    printf("Add to cache!\n");
+
+    }
+
+
     const char *code = NULL;
     uint8_t code_u8 = 0;
 
@@ -416,14 +495,14 @@ int Bluedot_Clean_Queue ( const char *json, uint8_t type )
                     if ( !memcmp(ip_convert, BluedotIPQueue[i].ip, MAX_IP_BIT_SIZE) )
                         {
 
-                            pthread_mutex_lock(&JAEBluedotIPWorkMutex);
+                            //pthread_mutex_lock(&JAEBluedotIPWorkMutex);
                             memset(BluedotIPQueue[i].ip, 0, MAX_IP_BIT_SIZE);
-                            pthread_mutex_unlock(&JAEBluedotIPWorkMutex);
+                            //pthread_mutex_unlock(&JAEBluedotIPWorkMutex);
                         }
 
                 }
 
-//            __atomic_sub_fetch(&counters->bluedot_ip_queue_current, 1, __ATOMIC_SEQ_CST);
+            __atomic_sub_fetch(&Counters->processor_bluedot_ip_queue, 1, __ATOMIC_SEQ_CST);
 
         }
 
