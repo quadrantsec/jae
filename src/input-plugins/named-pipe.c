@@ -43,6 +43,7 @@
 #include "counters.h"
 #include "util.h"
 #include "batch.h"
+#include "debug.h"
 
 
 #include "input-plugins/named-pipe.h"
@@ -128,6 +129,13 @@ void Input_Named_Pipe(void)
                                 }
 
                             /* Send incoming message to queue/batch */
+
+			    input[ strlen(input) - 1 ] = '\0';
+
+			    if ( Debug->named_pipe == true )
+			    	{
+				JAE_Log(DEBUG, "[%s, line %d] named_pipe to batch: %s", __FILE__, __LINE__, input );
+				}
 
                             Batch( input );
 

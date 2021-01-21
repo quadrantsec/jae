@@ -99,17 +99,17 @@ bool Bluedot( uint32_t rule_position, uint8_t s_position, char *json )
     uint64_t epoch_time = atol(timet);
     uint64_t i = 0;
 
-    char buff[1024] = { 0 }; 
+    char buff[1024] = { 0 };
 
     char *jsonptr = NULL;
     char *jsonptr_f = NULL;
-    char json_final[1024] = { 0 }; 
+    char json_final[1024] = { 0 };
 
-        const char *cdate_utime = NULL;
-        uint32_t cdate_utime_u32 = 0;
-        
-        const char *mdate_utime = NULL;
-        uint32_t mdate_utime_u32 = 0;
+    const char *cdate_utime = NULL;
+    uint32_t cdate_utime_u32 = 0;
+
+    const char *mdate_utime = NULL;
+    uint32_t mdate_utime_u32 = 0;
 
 
     /* If we have "NOT_FOUND", we can skip this */
@@ -200,12 +200,12 @@ bool Bluedot( uint32_t rule_position, uint8_t s_position, char *json )
 
                 }
 
-	    /* Check cache */
+            /* Check cache */
 
-	    for ( i =0; i < Config->processor_bluedot_ip_queue; i++ )
-	    	{
+            for ( i =0; i < Config->processor_bluedot_ip_queue; i++ )
+                {
 
-			if ( !memcmp(ip_convert, BluedotIPQueue[i].ip, MAX_IP_BIT_SIZE ))
+                    if ( !memcmp(ip_convert, BluedotIPQueue[i].ip, MAX_IP_BIT_SIZE ))
                         {
                             if (Debug->bluedot)
                                 {
@@ -215,9 +215,9 @@ bool Bluedot( uint32_t rule_position, uint8_t s_position, char *json )
                             return(false);
                         }
 
-		}
+                }
 
-	    /* Make sure there is enough queue space! */
+            /* Make sure there is enough queue space! */
 
             if ( Counters->processor_bluedot_ip_queue >= Config->processor_bluedot_ip_queue )
                 {
@@ -245,17 +245,24 @@ bool Bluedot( uint32_t rule_position, uint8_t s_position, char *json )
                         }
                 }
 
-		snprintf(buff, sizeof(buff), "GET /%s%s%s HTTP/1.1\r\nHost: %s\r\n%s\r\nX-BLUEDOT-DEVICEID: %s\r\nConnection: close\r\n\r\n", Config->processor_bluedot_uri, BLUEDOT_IP_LOOKUP_URL, json, Config->processor_bluedot_host, BLUEDOT_USER_AGENT, Config->processor_bluedot_device_id);
+            snprintf(buff, sizeof(buff), "GET /%s%s%s HTTP/1.1\r\nHost: %s\r\n%s\r\nX-BLUEDOT-DEVICEID: %s\r\nConnection: close\r\n\r\n", Config->processor_bluedot_uri, BLUEDOT_IP_LOOKUP_URL, json, Config->processor_bluedot_host, BLUEDOT_USER_AGENT, Config->processor_bluedot_device_id);
 
         }
 
-	else if ( Rules[rule_position].bluedot_type[s_position] == BLUEDOT_TYPE_HASH )
-	{
+    else if ( Rules[rule_position].bluedot_type[s_position] == BLUEDOT_TYPE_HASH )
+        {
 
-	}
+        }
 
 
-	/* Do the lookup! */
+    /* Do the lookup! */
+
+    if ( Debug->bluedot )
+        {
+            JAE_Log(DEBUG, "[%s, line %d] -------------------------------------------------------------", __FILE__, __LINE__);
+            JAE_Log(DEBUG, "[%s, line %d] Sending to Bluedot API: %s", __FILE__, __LINE__, buff);
+            JAE_Log(DEBUG, "[%s, line %d] -------------------------------------------------------------", __FILE__, __LINE__);
+        }
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -274,8 +281,8 @@ bool Bluedot( uint32_t rule_position, uint8_t s_position, char *json )
 
     if (connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) != 0)
         {
-            JAE_Log(WARN, "[%s, %d] Unabled to connect to server %s!", __FILE__, __LINE__, Config->processor_bluedot_ip);
-           // __atomic_add_fetch(&counters->bluedot_error_count, 1, __ATOMIC_SEQ_CST);
+            JAE_Log(WARN, "[%s, line %d] Unabled to connect to server %s!", __FILE__, __LINE__, Config->processor_bluedot_ip);
+            // __atomic_add_fetch(&counters->bluedot_error_count, 1, __ATOMIC_SEQ_CST);
             return(false);
         }
 
@@ -292,6 +299,10 @@ bool Bluedot( uint32_t rule_position, uint8_t s_position, char *json )
 
     close(sockfd);
 
+    /* Lookup is complete,  remove from queue */
+
+    Bluedot_Clean_Queue ( json, Rules[rule_position].bluedot_type[s_position] );
+
     strtok_r( buff, "{", &jsonptr);
     jsonptr_f = strtok_r( NULL, "{", &jsonptr);
 
@@ -307,26 +318,27 @@ bool Bluedot( uint32_t rule_position, uint8_t s_position, char *json )
     snprintf(json_final, sizeof(json_final), "{%s", jsonptr_f);
     json_final[ sizeof(json_final) - 1 ] = '\0';
 
-    printf("||%s||\n", json_final);
+    if ( Debug->bluedot == true )
+        {
+            JAE_Log(DEBUG, "[%s, line %d] Bluedot API Return: %s", __FILE__, __LINE__, json_final);
+        }
 
     json_in = json_tokener_parse(json_final);
 
     if ( json_in == NULL )
         {
             JAE_Log(WARN, "[%s, line %d] Unable to parse Bluedot JSON: %s", __FILE__, __LINE__, json_final);
-           // __atomic_add_fetch(&counters->bluedot_error_count, 1, __ATOMIC_SEQ_CST);
+            // __atomic_add_fetch(&counters->bluedot_error_count, 1, __ATOMIC_SEQ_CST);
             return(false);
         }
 
+    /* IP addess specific codes (create time and modify time) */
 
-
-/* IP addess specific codes (create time and modify time) */
-
-if ( Rules[rule_position].bluedot_type[s_position] == BLUEDOT_TYPE_IP )
+    if ( Rules[rule_position].bluedot_type[s_position] == BLUEDOT_TYPE_IP )
         {
 
-	json_object_object_get_ex(json_in, "ctime_epoch", &string_obj);
-	cdate_utime = json_object_get_string(string_obj);
+            json_object_object_get_ex(json_in, "ctime_epoch", &string_obj);
+            cdate_utime = json_object_get_string(string_obj);
 
             if ( cdate_utime != NULL )
                 {
@@ -337,8 +349,8 @@ if ( Rules[rule_position].bluedot_type[s_position] == BLUEDOT_TYPE_IP )
                     JAE_Log(WARN, "Bluedot return a bad ctime_epoch.");
                 }
 
-	    json_object_object_get_ex(json_in, "mtime_epoch", &string_obj);
-	    mdate_utime = json_object_get_string(string_obj);
+            json_object_object_get_ex(json_in, "mtime_epoch", &string_obj);
+            mdate_utime = json_object_get_string(string_obj);
 
             if ( mdate_utime != NULL )
                 {
@@ -349,14 +361,14 @@ if ( Rules[rule_position].bluedot_type[s_position] == BLUEDOT_TYPE_IP )
                     JAE_Log(WARN, "Bluedot return a bad mdate_epoch.");
                 }
 
-	}
+        }
 
 
-	const char *code = NULL; 
-	uint8_t code_u8 = 0; 
+    const char *code = NULL;
+    uint8_t code_u8 = 0;
 
-        json_object_object_get_ex(json_in, "code", &string_obj);
-        code = json_object_get_string(string_obj);
+    json_object_object_get_ex(json_in, "code", &string_obj);
+    code = json_object_get_string(string_obj);
 
     if ( code == NULL )
         {
@@ -365,15 +377,144 @@ if ( Rules[rule_position].bluedot_type[s_position] == BLUEDOT_TYPE_IP )
             return(false);
         }
 
-	code_u8 = atoi( code );
+    code_u8 = atoi( code );
 
-	json_object_put(json_in);                   /* Clear json_in as we're done with it */
+    json_object_put(json_in);                   /* Clear json_in as we're done with it */
 
-	if ( code_u8 > 0 ) 
-		{
-		return(true);
-		}
+    if ( code_u8 > 0 )
+        {
+            return(true);
+        }
 
 
-return(false);
+    return(false);
 }
+
+
+/****************************************************************************
+ * Bluedot_Clean_Queue - Clean's the "queue" of the type of lookup
+ * that happened.  This is called after a successful lookup.  We do this to
+ * prevent multiple lookups (at the same time!) of the same item!  This
+ * happens a lot with IP address looks
+ ****************************************************************************/
+
+int Bluedot_Clean_Queue ( const char *json, uint8_t type )
+{
+
+    uint64_t i = 0;
+
+    unsigned char ip_convert[MAX_IP_BIT_SIZE] = { 0 };
+
+    if ( type == BLUEDOT_TYPE_IP && Config->processor_bluedot_ip_queue > 0 )
+        {
+
+            IP_2_Bit(json, ip_convert);
+
+            for (i=0; i<Config->processor_bluedot_ip_queue; i++)
+                {
+
+                    if ( !memcmp(ip_convert, BluedotIPQueue[i].ip, MAX_IP_BIT_SIZE) )
+                        {
+
+                            pthread_mutex_lock(&JAEBluedotIPWorkMutex);
+                            memset(BluedotIPQueue[i].ip, 0, MAX_IP_BIT_SIZE);
+                            pthread_mutex_unlock(&JAEBluedotIPWorkMutex);
+                        }
+
+                }
+
+//            __atomic_sub_fetch(&counters->bluedot_ip_queue_current, 1, __ATOMIC_SEQ_CST);
+
+        }
+
+    /*
+        else if ( type == BLUEDOT_LOOKUP_HASH && config->bluedot_hash_max_cache > 0 )
+            {
+
+                for (i=0; i<config->bluedot_hash_queue; i++)
+                    {
+
+                        if ( !strcasecmp(json, SaganBluedotHashQueue[i].hash ) )
+                            {
+
+                                pthread_mutex_lock(&SaganProcBluedotHashWorkMutex);
+                                memset(SaganBluedotHashQueue[i].hash, 0, SHA256_HASH_SIZE+1);
+                                pthread_mutex_unlock(&SaganProcBluedotHashWorkMutex);
+
+                            }
+
+                    }
+
+                __atomic_sub_fetch(&counters->bluedot_hash_queue_current, 1, __ATOMIC_SEQ_CST);
+
+            }
+
+        else if ( type == BLUEDOT_LOOKUP_URL && config->bluedot_url_max_cache > 0 )
+            {
+
+                for (i =0; i<config->bluedot_url_queue; i++)
+                    {
+
+                        if ( !strcasecmp(json, SaganBluedotURLQueue[i].url ) )
+                            {
+
+                                pthread_mutex_lock(&SaganProcBluedotURLWorkMutex);
+                                memset(SaganBluedotURLQueue[i].url, 0, sizeof(SaganBluedotURLQueue[i].url));
+                                pthread_mutex_unlock(&SaganProcBluedotURLWorkMutex);
+                            }
+                    }
+
+                __atomic_sub_fetch(&counters->bluedot_url_queue_current, 1, __ATOMIC_SEQ_CST);
+
+            }
+
+
+        else if ( type == BLUEDOT_LOOKUP_FILENAME && config->bluedot_filename_max_cache > 0 )
+            {
+
+                for  (i=0; i<config->bluedot_filename_queue; i++)
+                    {
+
+                        if ( !strcasecmp(json, SaganBluedotFilenameQueue[i].filename ) )
+                            {
+
+                                pthread_mutex_lock(&SaganProcBluedotFilenameWorkMutex);
+                                memset(SaganBluedotFilenameQueue[i].filename, 0, sizeof(SaganBluedotFilenameQueue[i].filename));
+                                pthread_mutex_unlock(&SaganProcBluedotFilenameWorkMutex);
+                            }
+
+                    }
+
+                __atomic_sub_fetch(&counters->bluedot_filename_queue_current, 1, __ATOMIC_SEQ_CST);
+
+
+            }
+
+        else if ( type == BLUEDOT_LOOKUP_JA3 && config->bluedot_ja3_max_cache > 0 )
+            {
+
+                for  (i=0; i<config->bluedot_ja3_queue; i++)
+                    {
+
+                        if ( !strcasecmp(json, SaganBluedotJA3Queue[i].ja3 ) )
+                            {
+
+                                pthread_mutex_lock(&SaganProcBluedotJA3WorkMutex);
+                                memset(SaganBluedotJA3Queue[i].ja3, 0, sizeof(SaganBluedotJA3Queue[i].ja3));
+                                pthread_mutex_unlock(&SaganProcBluedotJA3WorkMutex);
+                            }
+
+                    }
+
+                __atomic_sub_fetch(&counters->bluedot_ja3_queue_current, 1, __ATOMIC_SEQ_CST);
+
+            }
+
+    */
+
+    return(true);
+}
+
+
+
+

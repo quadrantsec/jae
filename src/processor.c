@@ -121,6 +121,12 @@ void Processor (void)
 
                     json_count = Parse_JSON( Input_Batch_LOCAL[i].input, JSON_Key_String);
 
+                    if ( json_count <= 1 )
+                        {
+                            JAE_Log(WARN, "[%s, line %d] Input doesn't appear to be JSON: %s", __FILE__, __LINE__, Input_Batch_LOCAL[i].input);
+                        }
+
+
                     // if json_count == 0, then it wasn't json! */
 
                     // normalize/parse_ip first? To add 'keys'
@@ -143,6 +149,6 @@ void Processor (void)
             processor_running_threads--;
         }
 
-free(JSON_Key_String);
+    free(JSON_Key_String);
 
 }

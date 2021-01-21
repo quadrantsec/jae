@@ -36,5 +36,6 @@ struct _Bluedot_Skip
 
 
 void Bluedot_Init( void );
+int Bluedot_Clean_Queue ( const char *json, uint8_t type );
 bool Bluedot( uint32_t rule_position, uint8_t s_position, char *json );
 

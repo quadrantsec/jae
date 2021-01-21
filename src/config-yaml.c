@@ -788,7 +788,7 @@ void Load_YAML_Config( const char *yaml_file )
 
                                         }
 
-					free(Simple_Array);
+                                    free(Simple_Array);
                                 }
 
                         }

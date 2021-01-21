@@ -243,6 +243,12 @@ int main(int argc, char **argv)
                             Debug->bluedot = true;
                         }
 
+                    if (JAE_strstr(optarg, "named_pipe"))
+                        {
+                            Debug->named_pipe = true;
+                        }
+
+
 
                     break;
 
