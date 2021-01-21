@@ -1,0 +1,7 @@
+parsers/strstr-asm/sagan_ng-strstr_sse4_2.o: \
+ parsers/strstr-asm/strstr_sse4_2.S /usr/include/stdc-predef.h \
+ ../config.h
+
+/usr/include/stdc-predef.h:
+
+../config.h:

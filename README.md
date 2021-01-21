@@ -1,2 +1,4 @@
-# jae
-JAE - "JSON Analysis Engine"
+# JAE - JSON Analysis Engine (Pronounced "jay)
+
+....
+
