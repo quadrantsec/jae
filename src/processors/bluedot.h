@@ -28,10 +28,11 @@ typedef struct _Bluedot_IP_Cache _Bluedot_IP_Cache;
 struct _Bluedot_IP_Cache
 {
     unsigned char ip[MAX_IP_BIT_SIZE];
+    char ip_human[INET6_ADDRSTRLEN];
     uint64_t mdate_utime;
     uint64_t cdate_utime;
     uint64_t cache_utime;
-    char json[BLUEDOT_JSON_SIZE];
+    //char json[BLUEDOT_JSON_SIZE];
     uint8_t code;
 };
 

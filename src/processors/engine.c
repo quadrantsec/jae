@@ -26,6 +26,8 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <pthread.h>
+#include <netinet/in.h>
+
 
 #ifdef HAVE_SYS_PRCTL_H
 #include <sys/prctl.h>

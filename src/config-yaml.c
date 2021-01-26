@@ -39,6 +39,8 @@
 #include <stdbool.h>
 #include <sys/stat.h>
 #include <libgen.h>
+#include <netinet/in.h>
+
 
 #include "jae.h"
 #include "jae-defs.h"

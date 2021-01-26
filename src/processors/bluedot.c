@@ -457,7 +457,8 @@ uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Blu
                 }
 
             memcpy(BluedotIPCache[Counters->processor_bluedot_ip_cache].ip, ip_convert, MAX_IP_BIT_SIZE);
-            strlcpy(BluedotIPCache[Counters->processor_bluedot_ip_cache].json, json_final, sizeof(BluedotIPCache[Counters->processor_bluedot_ip_cache].json));
+	    memcpy(BluedotIPCache[Counters->processor_bluedot_ip_cache].ip_human, JSON_Key_String[json_position].json, INET6_ADDRSTRLEN);
+            //strlcpy(BluedotIPCache[Counters->processor_bluedot_ip_cache].json, json_final, sizeof(BluedotIPCache[Counters->processor_bluedot_ip_cache].json));
             BluedotIPCache[Counters->processor_bluedot_ip_cache].cache_utime = epoch_time;
             BluedotIPCache[Counters->processor_bluedot_ip_cache].cdate_utime = cdate_utime_u64;
             BluedotIPCache[Counters->processor_bluedot_ip_cache].mdate_utime = mdate_utime_u64;
@@ -674,10 +675,13 @@ void Bluedot_Clean_Cache(void)
 	 if ( ( bluedot_last_time - BluedotIPCache[i].cache_utime ) > Config->processor_bluedot_timeout )
 		{
 
+		memcpy(TmpBluedotIPCache[new_count].ip, BluedotIPCache[new_count].ip, MAX_IP_BIT_SIZE);
+		memcpy(TmpBluedotIPCache[new_count].ip_human, BluedotIPCache[new_count].ip_human, MAX_IP_BIT_SIZE);
+
 		TmpBluedotIPCache[new_count].mdate_utime = BluedotIPCache[new_count].mdate_utime;
 		TmpBluedotIPCache[new_count].cdate_utime = BluedotIPCache[new_count].cdate_utime;
 		TmpBluedotIPCache[new_count].cache_utime = BluedotIPCache[new_count].cache_utime;
-		//TmpBluedotIPCache[new_count].code = BluedotIPCache[new_count].code;
+		TmpBluedotIPCache[new_count].code = BluedotIPCache[new_count].code;
 
 		new_count++;
 
@@ -685,7 +689,7 @@ void Bluedot_Clean_Cache(void)
 
 	}
 
-//	free( BluedotIPCache ); 
+	/* Adjust cache size */
 
 	BluedotIPCache = (_Bluedot_IP_Cache *) realloc(BluedotIPCache, ( new_count + BLUEDOT_DEFAULT_MEMORY_SLOTS ) * sizeof(_Bluedot_IP_Cache));
 
@@ -697,12 +701,18 @@ void Bluedot_Clean_Cache(void)
 
 	printf("*** Old couunt: %d, New Count: %d\n", Counters->processor_bluedot_ip_cache,new_count);
 
+	/* Copy data to new cache array */
+
 	for ( i = 0; i < new_count; i++ )
 		{
 
-                TmpBluedotIPCache[i].mdate_utime = BluedotIPCache[i].mdate_utime;
-                TmpBluedotIPCache[i].cdate_utime = BluedotIPCache[i].cdate_utime;
-                TmpBluedotIPCache[i].cache_utime = BluedotIPCache[i].cache_utime;
+                memcpy(BluedotIPCache[i].ip, TmpBluedotIPCache[i].ip, MAX_IP_BIT_SIZE);
+                memcpy(BluedotIPCache[i].ip_human, TmpBluedotIPCache[i].ip_human, MAX_IP_BIT_SIZE); 
+
+                BluedotIPCache[i].mdate_utime = TmpBluedotIPCache[i].mdate_utime;
+                BluedotIPCache[i].cdate_utime = TmpBluedotIPCache[i].cdate_utime;
+                BluedotIPCache[i].cache_utime = TmpBluedotIPCache[i].cache_utime;
+                BluedotIPCache[i].code = TmpBluedotIPCache[i].code;
 
 		}
 

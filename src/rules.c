@@ -32,6 +32,8 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include <pcre.h>
+#include <netinet/in.h>
+
 
 
 #include "jae-defs.h"
