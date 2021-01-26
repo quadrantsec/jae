@@ -36,6 +36,7 @@ struct _Counters
 
     uint16_t 	processor_bluedot_ip_queue;
     uint64_t 	processor_bluedot_ip_cache;
+    uint64_t	processor_bluedot_memory_slot; 
 
 
 };

@@ -57,7 +57,7 @@ void Engine( struct _JSON_Key_String *JSON_Key_String, uint16_t json_count )
 {
 
     uint32_t rule_position = 0;
-    uint16_t json_position = 0; 
+    uint16_t json_position = 0;
     uint8_t s_position = 0;
 
     uint16_t match = 0;
@@ -135,18 +135,43 @@ void Engine( struct _JSON_Key_String *JSON_Key_String, uint16_t json_count )
                                     if ( !strcmp(JSON_Key_String[json_position].key, Rules[rule_position].bluedot_key[s_position] ) )
                                         {
 
-                                            /* DONT LIKE THIS AT ALL - If bluedot is enabled,  add query
-                                               data to the JSON_Key_String.  Then _check_ the data here
-                                               for a match.  THat way,  its always added to JSON reguardles
-                                               of results */
+                                            struct _Bluedot_Return *Bluedot_Return = NULL;
 
+                                            Bluedot_Return = malloc(sizeof(struct _Bluedot_Return));
 
-                                            if ( Bluedot( JSON_Key_String, rule_position, s_position, json_position ) == true )
+                                            if ( Bluedot_Return == NULL )
                                                 {
-                                                    printf("BLUEDOT MATCH\n");
-                                                    match++;
+                                                    JAE_Log(ERROR, "[%s, line %d] Failed to allocate memory for _Bluedot_Return. Abort!", __FILE__, __LINE__);
                                                 }
+
+                                            memset(Bluedot_Return, 0, sizeof(_Bluedot_Return));
+
+
+					    Bluedot_Clean_Cache_Check();
+
+                                            json_count = Bluedot_Add_JSON( JSON_Key_String, Bluedot_Return, json_count, rule_position, json_position, s_position );
+
+
+                                            printf("Bluedot_Return: %d\n", Bluedot_Return->code);
+
+
+                                            free(Bluedot_Return);
+
+
+                                            // Do lookup .  this way we can get json_count = Bluedot (like normalize);
+                                            //           Return a bluedot.json_key array?
+                                            // Take that data and do the analysis (should it fire, should it not).
+
+                                            /*
+                                                                                        if ( Bluedot( JSON_Key_String, rule_position, s_position, json_position, json_count ) == true )
+                                                                                            {
+                                                                                                printf("BLUEDOT MATCH\n");
+                                                                                                match++;
+                                                                                            }
+
+                                            						*/
                                         }
+
 
                                 }
                         }

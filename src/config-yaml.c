@@ -694,6 +694,17 @@ void Load_YAML_Config( const char *yaml_file )
 
                                 }
 
+                            if ( !strcmp(last_pass, "timeout" ) && Config->processor_bluedot_flag == true )
+                                {
+
+                                    Config->processor_bluedot_timeout = atoi( var_to_value ) * 60;
+
+                                    if ( Config->processor_bluedot_timeout == 0 )
+                                        {
+                                            JAE_Log(ERROR, "[%s, line %d] The 'bluedot' configuration 'timeout' is set to \"%s\" which is invalid. Abort", __FILE__, __LINE__, var_to_value);
+                                        }
+                                }
+
                             if ( !strcmp(last_pass, "host" ) && Config->processor_bluedot_flag == true )
                                 {
                                     strlcpy(Config->processor_bluedot_host, var_to_value, sizeof(Config->processor_bluedot_host));
@@ -708,8 +719,6 @@ void Load_YAML_Config( const char *yaml_file )
                                 {
                                     strlcpy(Config->processor_bluedot_device_id, var_to_value, sizeof(Config->processor_bluedot_device_id));
                                 }
-
-
 
 
                             if ( !strcmp(last_pass, "skip-networks" ) && Config->processor_bluedot_flag == true )

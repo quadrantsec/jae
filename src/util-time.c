@@ -32,6 +32,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "util-time.h"
 
@@ -57,3 +58,17 @@ void CreateIsoTimeString (const struct timeval *ts, char *str, size_t size)
 }
 
 
+uint64_t GetEpochTime ( void )
+{
+
+    time_t t;
+    struct tm *now = NULL;
+
+    char  timet[20] = { 0 };                                                                                 
+                                                                                                                 t = time(NULL);
+    now=localtime(&t);
+    strftime(timet, sizeof(timet), "%s",  now);                                                              
+
+    return( atol(timet) );
+
+}

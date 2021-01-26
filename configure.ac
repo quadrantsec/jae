@@ -71,7 +71,7 @@ AC_ARG_ENABLE(bluedot,
 )
 
 AC_ARG_ENABLE(esmtp,
-  [  --enable-esmtp	  Enable libesmtp support.],
+  [  --enable-esmtp	     Enable libesmtp support.],
   [ ESMTP="$enableval"],
   [ ESMTP="no" ]
 )
@@ -95,9 +95,15 @@ AC_ARG_ENABLE(system-strstr,
 )
 
 AC_ARG_ENABLE(redis,
-  [  --enable-redis  Enable Redis support.],
+  [  --enable-redis          Enable Redis support.],
   [ REDIS="$enableval"],
   [ REDIS="no" ]
+)
+
+AC_ARG_ENABLE(tcmalloc,
+  [  --enable-tcmalloc       Enable TCMalloc support.],
+  [ TCMALLOC="$enableval"],
+  [ TCMALLOC="no" ]
 )
 
 AC_ARG_WITH(esmtp_includes,
@@ -526,6 +532,13 @@ if test "$REDIS" = "yes"; then
        AC_CHECK_LIB(hiredis, main,,AC_MSG_ERROR(The Hiredis (Redis) library cannot be found.
 If you're not interested in Redis support use the --disable-redis flag.))
        fi
+
+if test "$TCMALLOC" = "yes"; then
+       AC_MSG_RESULT([------- TCMalloc support is enabled -------])
+       AC_CHECK_LIB(tcmalloc_minimal,main,,AC_MSG_ERROR(The TCMalloc library cannot be found.
+If you're not interested in Redis support use the --disable-tcmalloc flag.))
+       fi
+
 
 if test "$GEOIP" = "yes"; then
        AC_MSG_RESULT([------- Maxmind GeoIP support is enabled -------])
