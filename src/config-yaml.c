@@ -696,6 +696,19 @@ void Load_YAML_Config( const char *yaml_file )
 
                                 }
 
+                            if ( !strcmp(last_pass, "ip-hash" ) && Config->processor_bluedot_flag == true )
+                                {
+
+                                    Config->processor_bluedot_hash_queue = atoi( var_to_value );
+
+                                    if ( Config->processor_bluedot_hash_queue == 0 )
+                                        {
+                                            JAE_Log(ERROR, "[%s, line %d] The 'bluedot' configuration 'hash_queue' is set to \"%s\" which is invalid. Abort", __FILE__, __LINE__, var_to_value);
+                                        }
+
+                                }
+
+
                             if ( !strcmp(last_pass, "timeout" ) && Config->processor_bluedot_flag == true )
                                 {
 

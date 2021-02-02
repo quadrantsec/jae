@@ -63,3 +63,7 @@
 #define WARN                    2
 #define DEBUG                   3
 
+
+#define SHA256_HASH_SIZE	64
+
+

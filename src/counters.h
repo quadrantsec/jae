@@ -38,5 +38,9 @@ struct _Counters
     uint64_t 	processor_bluedot_ip_cache;
     uint64_t	processor_bluedot_memory_slot; 
 
+//    uint16_t 	processor_bluedot_hash_queue;
+    uint64_t 	processor_bluedot_hash_cache;
+//    uint64_t	processor_bluedot_memory_slot; 
+
 
 };

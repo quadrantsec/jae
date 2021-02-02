@@ -24,6 +24,13 @@ struct _Bluedot_IP_Queue
     unsigned char ip[MAX_IP_BIT_SIZE];
 };
 
+typedef struct _Bluedot_Hash_Queue _Bluedot_Hash_Queue;
+struct _Bluedot_Hash_Queue
+{
+    char hash[SHA256_HASH_SIZE+1];
+};
+
+
 typedef struct _Bluedot_IP_Cache _Bluedot_IP_Cache;
 struct _Bluedot_IP_Cache
 {
@@ -36,6 +43,14 @@ struct _Bluedot_IP_Cache
     uint8_t code;
 };
 
+typedef struct _Bluedot_Hash_Cache _Bluedot_Hash_Cache;
+struct _Bluedot_Hash_Cache
+{
+    char hash[SHA256_HASH_SIZE+1];
+    uint64_t cache_utime;
+//    char bluedot_json[BLUEDOT_JSON_SIZE];
+    int alertid;
+};
 
 
 /* IP address to NOT lookup */

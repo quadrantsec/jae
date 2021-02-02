@@ -56,6 +56,7 @@ struct _Bluedot_Skip *Bluedot_Skip;
 
 
 struct _Bluedot_IP_Cache *BluedotIPCache = NULL;
+struct _Bluedot_Hash_Cache *BluedotHashCache = NULL;
 
 
 pthread_mutex_t JAE_DNS_Mutex=PTHREAD_MUTEX_INITIALIZER;
@@ -64,6 +65,8 @@ pthread_mutex_t BluedotWorkMutex=PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t JAEBluedotIPWorkMutex=PTHREAD_MUTEX_INITIALIZER;		// IP queue
 
 struct _Bluedot_IP_Queue *BluedotIPQueue = NULL;
+struct _Bluedot_Hash_Queue *BluedotHashQueue = NULL;
+
 
 bool bluedot_cache_clean_lock=false;
 bool bluedot_dns_global = 0;
@@ -87,22 +90,25 @@ void Bluedot_Init( void )
                 }
 
             memset(BluedotIPQueue, 0, Config->processor_bluedot_ip_queue * sizeof(_Bluedot_IP_Queue));
-            /*
-                        BluedotIPCache = malloc( BLUEDOT_DEFAULT_MEMORY_SLOTS * sizeof(struct _Bluedot_IP_Cache));
 
-                        if ( BluedotIPCache == NULL )
-                            {
-                                JAE_Log(ERROR, "[%s, line %d] Failed to allocate memory for _Bluedot_IP_Cache. Abort!", __FILE__, __LINE__);
-                            }
+	}
 
-                        memset(BluedotIPCache, 0, BLUEDOT_DEFAULT_MEMORY_SLOTS * sizeof(_Bluedot_IP_Cache));
+    if ( Config->processor_bluedot_hash_queue > 0 )
+    	{
 
-            	    Counters->processor_bluedot_memory_slot = BLUEDOT_DEFAULT_MEMORY_SLOTS;
-            */
-        }
+	BluedotHashQueue = malloc(Config->processor_bluedot_hash_queue * sizeof(struct _Bluedot_Hash_Queue));
+
+            if ( BluedotHashQueue == NULL )
+                {
+                    JAE_Log(ERROR, "[%s, line %d] Failed to allocate memory for _Bluedot_Hash_Queue. Abort!", __FILE__, __LINE__);
+                }
+
+            memset(BluedotHashQueue, 0, Config->processor_bluedot_hash_queue * sizeof(_Bluedot_Hash_Queue));
+
+	}
+
 
 }
-
 
 
 uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Bluedot_Return *Bluedot_Return, uint16_t json_count, uint32_t rule_position, uint16_t json_position, uint8_t s_position )
@@ -115,6 +121,19 @@ uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Blu
 
     struct json_object *json_in = NULL;
     struct json_object *string_obj = NULL;
+
+    /*
+        struct _JSON_Key_String *JSON_Key_String_Bluedot;
+
+        JSON_Key_String_Bluedot = malloc(sizeof(_JSON_Key_String) * MAX_JSON_NEST );
+
+        if ( JSON_Key_String_Bluedot == NULL )
+            {
+                JAE_Log(ERROR, "[%s, line %d] Failed to allocate memory for JSON_Key_String_Bluedot", __FILE__, __LINE__);
+            }
+    	*/
+
+    //memset(&JSON_Key_String_Bluedot, 0, sizeof(struct _JSON_Key_String));
 
     uint64_t i = 0;
 
@@ -191,8 +210,6 @@ uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Blu
     if ( Rules[rule_position].bluedot_type[s_position] == BLUEDOT_TYPE_IP )
         {
 
-//            unsigned char ip_convert[MAX_IP_BIT_SIZE] = { 0 };
-
             IP_2_Bit(JSON_Key_String[json_position].json, ip_convert);
 
             /* Don't look up non-routed stuff */
@@ -239,13 +256,16 @@ uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Blu
                                     JAE_Log(DEBUG, "[%s, line %d] Pulled %s from Bluedot cache with category of \"%d\". [cdate_epoch: %d / mdate_epoch: %d]", __FILE__, __LINE__, JSON_Key_String[json_position].json, BluedotIPCache[i].code, BluedotIPCache[i].cdate_utime, BluedotIPCache[i].mdate_utime);
                                 }
 
+                            // ADD TO JSON
+
+
+			    Bluedot_Return->code = BluedotIPCache[i].code;
 
                             return(true);
                         }
 
 
                 }
-
 
 
             /* Check IP queue */
@@ -269,7 +289,7 @@ uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Blu
 
             if ( Counters->processor_bluedot_ip_queue >= Config->processor_bluedot_ip_queue )
                 {
-                    JAE_Log(NORMAL, "[%s, line %d] Out of IP queue space! Considering increasing cache size!", __FILE__, __LINE__);
+                    JAE_Log(NORMAL, "[%s, line %d] Out of IP queue space! Considering increasing queue size!", __FILE__, __LINE__);
                     return(false);
                 }
 
@@ -298,8 +318,32 @@ uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Blu
 
         }
 
+
+    /* Sha/MD5/etc Hash */
+
     else if ( Rules[rule_position].bluedot_type[s_position] == BLUEDOT_TYPE_HASH )
         {
+
+            for (i=0; i<Counters->processor_bluedot_hash_cache; i++)
+                {
+
+			if (!strcasecmp(JSON_Key_String[json_position].json, BluedotHashCache[i].hash))
+                        {
+
+                            if (Debug->bluedot)
+                                {
+				JAE_Log(DEBUG, "[%s, line %d] Pulled hash '%s' from Bluedot hash cache with category of \"%d\".", __FILE__, __LINE__, JSON_Key_String[json_position].json, BluedotHashCache[i].alertid);
+                                }
+
+                            // ADD TO JSON
+
+                            return(true);
+                        }
+
+                }
+
+		// CHANGE BACK TO HASH!
+		// HERE
 
         }
 
@@ -372,6 +416,7 @@ uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Blu
             JAE_Log(DEBUG, "[%s, line %d] Bluedot API Return: %s", __FILE__, __LINE__, json_final);
         }
 
+
     json_in = json_tokener_parse(json_final);
 
     if ( json_in == NULL )
@@ -436,7 +481,7 @@ uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Blu
 
             pthread_mutex_lock(&JAEBluedotIPWorkMutex);
 
-	    /* Allocate more memory if needed */
+            /* Allocate more memory if needed */
 
             if ( Counters->processor_bluedot_ip_cache >= Counters->processor_bluedot_memory_slot )
                 {
@@ -457,7 +502,7 @@ uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Blu
                 }
 
             memcpy(BluedotIPCache[Counters->processor_bluedot_ip_cache].ip, ip_convert, MAX_IP_BIT_SIZE);
-	    memcpy(BluedotIPCache[Counters->processor_bluedot_ip_cache].ip_human, JSON_Key_String[json_position].json, INET6_ADDRSTRLEN);
+            memcpy(BluedotIPCache[Counters->processor_bluedot_ip_cache].ip_human, JSON_Key_String[json_position].json, INET6_ADDRSTRLEN);
             //strlcpy(BluedotIPCache[Counters->processor_bluedot_ip_cache].json, json_final, sizeof(BluedotIPCache[Counters->processor_bluedot_ip_cache].json));
             BluedotIPCache[Counters->processor_bluedot_ip_cache].cache_utime = epoch_time;
             BluedotIPCache[Counters->processor_bluedot_ip_cache].cdate_utime = cdate_utime_u64;
@@ -471,11 +516,132 @@ uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Blu
 
             pthread_mutex_unlock(&JAEBluedotIPWorkMutex);
 
+            /* We already have some data store,  so let's use it */
+
+            snprintf(JSON_Key_String[json_count].key, MAX_JSON_KEY, ".bluedot.mtime_epoch");
+            snprintf(JSON_Key_String[json_count].json, MAX_JSON_VALUE, "%" PRIu64 "", mdate_utime_u64 );
+
+            json_count++;
+
+            snprintf(JSON_Key_String[json_count].key, MAX_JSON_KEY, ".bluedot.ctime_epoch");
+            snprintf(JSON_Key_String[json_count].json, MAX_JSON_VALUE, "%" PRIu64 "", cdate_utime_u64 );
+
+            json_count++;
+
+            /* Extract from bluedot JSON */
+
+            json_object_object_get_ex(json_in, "api_user", &string_obj);
+            const char *api_user = json_object_get_string(string_obj);
+
+            snprintf(JSON_Key_String[json_count].key, MAX_JSON_KEY, ".bluedot.api_user");
+            snprintf(JSON_Key_String[json_count].json, MAX_JSON_VALUE, "%s", api_user );
+
+            json_count++;
+
+            json_object_object_get_ex(json_in, "code", &string_obj);
+            const char *code = json_object_get_string(string_obj);
+
+            snprintf(JSON_Key_String[json_count].key, MAX_JSON_KEY, ".bluedot.code");
+            snprintf(JSON_Key_String[json_count].json, MAX_JSON_VALUE, "%s", code );
+
+            json_count++;
+
+            json_object_object_get_ex(json_in, "category", &string_obj);
+            const char *category = json_object_get_string(string_obj);
+
+            snprintf(JSON_Key_String[json_count].key, MAX_JSON_KEY, ".bluedot.category");
+            snprintf(JSON_Key_String[json_count].json, MAX_JSON_VALUE, "%s", category );
+
+            json_count++;
+
+            json_object_object_get_ex(json_in, "comments", &string_obj);
+            const char *comments = json_object_get_string(string_obj);
+
+            snprintf(JSON_Key_String[json_count].key, MAX_JSON_KEY, ".bluedot.comments");
+            snprintf(JSON_Key_String[json_count].json, MAX_JSON_VALUE, "%s", comments );
+
+            json_count++;
+
+            json_object_object_get_ex(json_in, "source", &string_obj);
+            const char *source = json_object_get_string(string_obj);
+
+            snprintf(JSON_Key_String[json_count].key, MAX_JSON_KEY, ".bluedot.source");
+            snprintf(JSON_Key_String[json_count].json, MAX_JSON_VALUE, "%s", source );
+
+            json_count++;
+
+            json_object_object_get_ex(json_in, "ctime", &string_obj);
+            const char *ctime = json_object_get_string(string_obj);
+
+            snprintf(JSON_Key_String[json_count].key, MAX_JSON_KEY, ".bluedot.ctime");
+            snprintf(JSON_Key_String[json_count].json, MAX_JSON_VALUE, "%s", ctime );
+
+            json_count++;
+
+            json_object_object_get_ex(json_in, "mtime", &string_obj);
+            const char *mtime = json_object_get_string(string_obj);
+
+            snprintf(JSON_Key_String[json_count].key, MAX_JSON_KEY, ".bluedot.mtime");
+            snprintf(JSON_Key_String[json_count].json, MAX_JSON_VALUE, "%s", mtime );
+
+            json_count++;
+
+            json_object_object_get_ex(json_in, "query", &string_obj);
+            const char *query = json_object_get_string(string_obj);
+
+            snprintf(JSON_Key_String[json_count].key, MAX_JSON_KEY, ".bluedot.query");
+            snprintf(JSON_Key_String[json_count].json, MAX_JSON_VALUE, "%s", query );
+
+            json_count++;
+
+            json_object_object_get_ex(json_in, "query_type", &string_obj);
+            const char *query_type = json_object_get_string(string_obj);
+
+            snprintf(JSON_Key_String[json_count].key, MAX_JSON_KEY, ".bluedot.query_type");
+            snprintf(JSON_Key_String[json_count].json, MAX_JSON_VALUE, "%s", query_type );
+
+            json_count++;
+
+            json_object_object_get_ex(json_in, "last_seen", &string_obj);
+            const char *last_seen = json_object_get_string(string_obj);
+
+            snprintf(JSON_Key_String[json_count].key, MAX_JSON_KEY, ".bluedot.last_seen");
+            snprintf(JSON_Key_String[json_count].json, MAX_JSON_VALUE, "%s", last_seen );
+
+            json_count++;
+
+            json_object_object_get_ex(json_in, "query_counter", &string_obj);
+            const char *query_counter = json_object_get_string(string_obj);
+
+            snprintf(JSON_Key_String[json_count].key, MAX_JSON_KEY, ".bluedot.query_counter");
+            snprintf(JSON_Key_String[json_count].json, MAX_JSON_VALUE, "%s", query_counter );
+
+            json_count++;
+
+            json_object_object_get_ex(json_in, "counter", &string_obj);
+            const char *counter = json_object_get_string(string_obj);
+
+            snprintf(JSON_Key_String[json_count].key, MAX_JSON_KEY, ".bluedot.counter");
+            snprintf(JSON_Key_String[json_count].json, MAX_JSON_VALUE, "%s", counter );
+
+            json_count++;
+
+
+
+
+
+
+
+//	    printf("JUST INPUT THESE INTO JSON_Key_String: %s\n", json_final);
+
 
         }
 
+
     json_object_put(json_in);                   /* Clear json_in as we're done with it */
     printf("at the end!\n");
+
+    return(json_count);
 }
 
 
@@ -604,24 +770,24 @@ int Bluedot_Clean_Queue ( const char *json, uint8_t type )
 void Bluedot_Clean_Cache_Check(void)
 {
 
-    uint64_t current_time = GetEpochTime(); 
+    uint64_t current_time = GetEpochTime();
 
-        if ( bluedot_cache_clean_lock == false && current_time > ( bluedot_last_time + Config->processor_bluedot_timeout ) )
-	        {
+    if ( bluedot_cache_clean_lock == false && current_time > ( bluedot_last_time + Config->processor_bluedot_timeout ) )
+        {
 
-		pthread_mutex_lock(&BluedotWorkMutex);
+            pthread_mutex_lock(&BluedotWorkMutex);
 
-		bluedot_cache_clean_lock = true;
+            bluedot_cache_clean_lock = true;
 
-		JAE_Log(NORMAL, "Bluedot cache timeout reached %d minutes.  Cleaning up.", Config->processor_bluedot_timeout / 60 );
+            JAE_Log(NORMAL, "Bluedot cache timeout reached %d minutes.  Cleaning up.", Config->processor_bluedot_timeout / 60 );
 
-		Bluedot_Clean_Cache();
+            Bluedot_Clean_Cache();
 
-		bluedot_cache_clean_lock = false; 
+            bluedot_cache_clean_lock = false;
 
-		pthread_mutex_unlock(&BluedotWorkMutex);
+            pthread_mutex_unlock(&BluedotWorkMutex);
 
-		}
+        }
 
 }
 
@@ -629,20 +795,20 @@ void Bluedot_Clean_Cache_Check(void)
 void Bluedot_Clean_Cache(void)
 {
 
-/*
-    uint64_t new_bluedot_ip_max_cache = 0;
-    uint64_t new_bluedot_hash_max_cache = 0;
-    uint64_t new_bluedot_url_max_cache = 0;
-    uint64_t new_bluedot_filename_max_cache = 0;
-    uint64_t new_bluedot_ja3_max_cache = 0;
-    */
+    /*
+        uint64_t new_bluedot_ip_max_cache = 0;
+        uint64_t new_bluedot_hash_max_cache = 0;
+        uint64_t new_bluedot_url_max_cache = 0;
+        uint64_t new_bluedot_filename_max_cache = 0;
+        uint64_t new_bluedot_ja3_max_cache = 0;
+        */
 
-    uint64_t delete_count = 0; 
-    uint64_t i = 0; 
+    uint64_t delete_count = 0;
+    uint64_t i = 0;
 
     uint64_t current_time = GetEpochTime();
 
-    uint64_t new_count = 0; 
+    uint64_t new_count = 0;
 
     /* Update last cleaning time! */
 
@@ -659,9 +825,9 @@ void Bluedot_Clean_Cache(void)
     TmpBluedotIPCache = malloc( Counters->processor_bluedot_ip_cache * sizeof(struct _Bluedot_IP_Cache));
 
     if ( TmpBluedotIPCache == NULL )
-    	{
-	JAE_Log(ERROR, "[%s, line %d] Failed to allocate memory for TmpBluedotIPCache. Abort!", __FILE__, __LINE__);
-	}
+        {
+            JAE_Log(ERROR, "[%s, line %d] Failed to allocate memory for TmpBluedotIPCache. Abort!", __FILE__, __LINE__);
+        }
 
     memset(TmpBluedotIPCache, 0, Counters->processor_bluedot_ip_cache * sizeof(_Bluedot_IP_Cache));
 
@@ -672,54 +838,54 @@ void Bluedot_Clean_Cache(void)
     for (i=0; i < Counters->processor_bluedot_ip_cache; i++ )
         {
 
-	 if ( ( bluedot_last_time - BluedotIPCache[i].cache_utime ) > Config->processor_bluedot_timeout )
-		{
+            if ( ( bluedot_last_time - BluedotIPCache[i].cache_utime ) > Config->processor_bluedot_timeout )
+                {
 
-		memcpy(TmpBluedotIPCache[new_count].ip, BluedotIPCache[new_count].ip, MAX_IP_BIT_SIZE);
-		memcpy(TmpBluedotIPCache[new_count].ip_human, BluedotIPCache[new_count].ip_human, MAX_IP_BIT_SIZE);
+                    memcpy(TmpBluedotIPCache[new_count].ip, BluedotIPCache[new_count].ip, MAX_IP_BIT_SIZE);
+                    memcpy(TmpBluedotIPCache[new_count].ip_human, BluedotIPCache[new_count].ip_human, MAX_IP_BIT_SIZE);
 
-		TmpBluedotIPCache[new_count].mdate_utime = BluedotIPCache[new_count].mdate_utime;
-		TmpBluedotIPCache[new_count].cdate_utime = BluedotIPCache[new_count].cdate_utime;
-		TmpBluedotIPCache[new_count].cache_utime = BluedotIPCache[new_count].cache_utime;
-		TmpBluedotIPCache[new_count].code = BluedotIPCache[new_count].code;
+                    TmpBluedotIPCache[new_count].mdate_utime = BluedotIPCache[new_count].mdate_utime;
+                    TmpBluedotIPCache[new_count].cdate_utime = BluedotIPCache[new_count].cdate_utime;
+                    TmpBluedotIPCache[new_count].cache_utime = BluedotIPCache[new_count].cache_utime;
+                    TmpBluedotIPCache[new_count].code = BluedotIPCache[new_count].code;
 
-		new_count++;
+                    new_count++;
 
-		}
+                }
 
-	}
+        }
 
-	/* Adjust cache size */
+    /* Adjust cache size */
 
-	BluedotIPCache = (_Bluedot_IP_Cache *) realloc(BluedotIPCache, ( new_count + BLUEDOT_DEFAULT_MEMORY_SLOTS ) * sizeof(_Bluedot_IP_Cache));
+    BluedotIPCache = (_Bluedot_IP_Cache *) realloc(BluedotIPCache, ( new_count + BLUEDOT_DEFAULT_MEMORY_SLOTS ) * sizeof(_Bluedot_IP_Cache));
 
-                    if ( BluedotIPCache == NULL )
-                        {   
-                            JAE_Log(ERROR, "[%s, line %d] Failed to reallocate memory for BluedotIPCache. Abort!", __FILE__, __LINE__);
-                        }
+    if ( BluedotIPCache == NULL )
+        {
+            JAE_Log(ERROR, "[%s, line %d] Failed to reallocate memory for BluedotIPCache. Abort!", __FILE__, __LINE__);
+        }
 
 
-	printf("*** Old couunt: %d, New Count: %d\n", Counters->processor_bluedot_ip_cache,new_count);
+    printf("*** Old couunt: %d, New Count: %d\n", Counters->processor_bluedot_ip_cache,new_count);
 
-	/* Copy data to new cache array */
+    /* Copy data to new cache array */
 
-	for ( i = 0; i < new_count; i++ )
-		{
+    for ( i = 0; i < new_count; i++ )
+        {
 
-                memcpy(BluedotIPCache[i].ip, TmpBluedotIPCache[i].ip, MAX_IP_BIT_SIZE);
-                memcpy(BluedotIPCache[i].ip_human, TmpBluedotIPCache[i].ip_human, MAX_IP_BIT_SIZE); 
+            memcpy(BluedotIPCache[i].ip, TmpBluedotIPCache[i].ip, MAX_IP_BIT_SIZE);
+            memcpy(BluedotIPCache[i].ip_human, TmpBluedotIPCache[i].ip_human, MAX_IP_BIT_SIZE);
 
-                BluedotIPCache[i].mdate_utime = TmpBluedotIPCache[i].mdate_utime;
-                BluedotIPCache[i].cdate_utime = TmpBluedotIPCache[i].cdate_utime;
-                BluedotIPCache[i].cache_utime = TmpBluedotIPCache[i].cache_utime;
-                BluedotIPCache[i].code = TmpBluedotIPCache[i].code;
+            BluedotIPCache[i].mdate_utime = TmpBluedotIPCache[i].mdate_utime;
+            BluedotIPCache[i].cdate_utime = TmpBluedotIPCache[i].cdate_utime;
+            BluedotIPCache[i].cache_utime = TmpBluedotIPCache[i].cache_utime;
+            BluedotIPCache[i].code = TmpBluedotIPCache[i].code;
 
-		}
+        }
 
-	free( TmpBluedotIPCache );
+    free( TmpBluedotIPCache );
 
-	Counters->processor_bluedot_ip_cache = new_count;
-	Counters->processor_bluedot_memory_slot = new_count + BLUEDOT_DEFAULT_MEMORY_SLOTS;
+    Counters->processor_bluedot_ip_cache = new_count;
+    Counters->processor_bluedot_memory_slot = new_count + BLUEDOT_DEFAULT_MEMORY_SLOTS;
 
 //	Counters->processor_bluedot_memory_slot = Counters->processor_bluedot_memory_slot + BLUEDOT_DEFAULT_MEMORY_SLOTS;
 
