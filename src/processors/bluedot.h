@@ -17,6 +17,16 @@
 #define		BLUEDOT_DEFAULT_MEMORY_SLOTS	5
 #define		BLUEDOT_JSON_SIZE		1024
 
+#define		BLUEDOT_API_USER		32
+#define		BLUEDOT_CATEGORY		16
+#define		BLUEDOT_COMMENTS		1024
+#define		BLUEDOT_SOURCE			128
+#define		BLUEDOT_CTIME			16
+#define		BLUEDOT_MTIME			16
+#define		BLUEDOT_QUERY			64
+#define		BLUEDOT_LAST_SEEN		16
+#define		BLUEDOT_QUERY_TYPE		16
+
 
 typedef struct _Bluedot_IP_Queue _Bluedot_IP_Queue;
 struct _Bluedot_IP_Queue
@@ -39,8 +49,22 @@ struct _Bluedot_IP_Cache
     uint64_t mdate_utime;
     uint64_t cdate_utime;
     uint64_t cache_utime;
-    //char json[BLUEDOT_JSON_SIZE];
     uint8_t code;
+
+    char api_user[BLUEDOT_API_USER];
+    char category[BLUEDOT_CATEGORY];
+    char comments[BLUEDOT_COMMENTS];
+    char source[BLUEDOT_SOURCE];
+    char ctime[BLUEDOT_CTIME];
+    char mtime[BLUEDOT_MTIME];
+    char query[BLUEDOT_QUERY];
+    char query_type[BLUEDOT_QUERY_TYPE];
+    char last_seen[BLUEDOT_LAST_SEEN];
+    uint64_t query_counter;
+    uint64_t counter;
+
+    //char json[BLUEDOT_JSON_SIZE];
+
 };
 
 typedef struct _Bluedot_Hash_Cache _Bluedot_Hash_Cache;
@@ -81,6 +105,8 @@ int Bluedot_Clean_Queue ( const char *json, uint8_t type );
 bool Bluedot( struct _JSON_Key_String *JSON_Key_String, uint32_t rule_position, uint8_t s_position, uint16_t json_position, uint16_t json_count );
 
 uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Bluedot_Return *Bluedot_Return, uint16_t json_count, uint32_t rule_position, uint16_t json_position, uint8_t s_position );
+
+uint16_t Check_IP_Cache ( struct _JSON_Key_String *JSON_Key_String, struct _Bluedot_Return *Bluedot_Return, uint16_t json_count, uint16_t json_position, unsigned char *ip_convert );
 
 
 void Bluedot_Clean_Cache_Check ( void );

@@ -153,7 +153,7 @@ void Engine( struct _JSON_Key_String *JSON_Key_String, uint16_t json_count )
                                             json_count = Bluedot_Add_JSON( JSON_Key_String, Bluedot_Return, json_count, rule_position, json_position, s_position );
 
 
-                                            printf("JSON Count: %d, Bluedot_Return: %d\n", json_count, Bluedot_Return->code);
+                                            //printf("JSON Count: %d, Bluedot_Return: %d\n", json_count, Bluedot_Return->code);
 
 
                                             free(Bluedot_Return);
@@ -223,12 +223,12 @@ void Match( struct _JSON_Key_String *JSON_Key_String, uint16_t json_count, uint3
 
     /* xbit "local" or "redis" in the rule? */
 
-/*
-    for ( i = 0; i < json_count; i++ )
-        {
-            printf("Key: |%s|, JSON: |%s|\n", JSON_Key_String[i].key, JSON_Key_String[i].json);
-        }
-	*/
+    /*
+        for ( i = 0; i < json_count; i++ )
+            {
+                printf("Key: |%s|, JSON: |%s|\n", JSON_Key_String[i].key, JSON_Key_String[i].json);
+            }
+    	*/
 
     after = After( JSON_Key_String, json_count, rule_position );
 

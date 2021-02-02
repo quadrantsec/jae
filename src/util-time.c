@@ -64,10 +64,10 @@ uint64_t GetEpochTime ( void )
     time_t t;
     struct tm *now = NULL;
 
-    char  timet[20] = { 0 };                                                                                 
-                                                                                                                 t = time(NULL);
+    char  timet[20] = { 0 };
+    t = time(NULL);
     now=localtime(&t);
-    strftime(timet, sizeof(timet), "%s",  now);                                                              
+    strftime(timet, sizeof(timet), "%s",  now);
 
     return( atol(timet) );
 
