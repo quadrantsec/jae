@@ -28,6 +28,17 @@
 #define		BLUEDOT_QUERY_TYPE		16
 
 
+#define		BLUEDOT_CAT_CATEGORY		16
+#define		BLUEDOT_CAT_DESCRIPTION		32
+
+typedef struct _Bluedot_Cat_List _Bluedot_Cat_List;
+struct _Bluedot_Cat_List
+{
+    uint8_t     code;
+    char        category[BLUEDOT_CAT_CATEGORY];
+    char	description[BLUEDOT_CAT_DESCRIPTION];
+};
+
 typedef struct _Bluedot_IP_Queue _Bluedot_IP_Queue;
 struct _Bluedot_IP_Queue
 {
@@ -111,4 +122,5 @@ uint16_t Check_IP_Cache ( struct _JSON_Key_String *JSON_Key_String, struct _Blue
 
 void Bluedot_Clean_Cache_Check ( void );
 void Bluedot_Clean_Cache( void );
+void Bluedot_Load_Categories ( void );
 

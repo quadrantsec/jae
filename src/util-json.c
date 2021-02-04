@@ -1,4 +1,3 @@
-/* $Id$ */
 /*
 ** Copyright (C) 2020 Quadrant Information Security <quadrantsec.com>
 ** Copyright (C) 2020 Champ Clark III <cclark@quadrantsec.com>
@@ -19,30 +18,40 @@
 ** Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <stdint.h>
+/* util-json.c
+ *
+ * Time functions.
+ *
+ */
 
-typedef struct _Counters _Counters;
-struct _Counters
+#ifdef HAVE_CONFIG_H
+#include "config.h"             /* From autoconf */
+#endif
+
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdbool.h>
+
+#include "util-json.h"
+
+
+bool Validate_JSON_Simple ( const char *json )
 {
 
-    uint32_t	var;
 
-    uint64_t	input_received;
+    if ( json[0] != '{' && json[1] != '{' )
+        {
+            printf("BAD\n");
+            return(false);
+        }
 
-    uint16_t	classifications;
-    uint32_t	rules;
-
-    uint32_t	processor_bluedot_skip;
-
-    uint8_t 	processors_bluedot_cat_count;
-
-    uint16_t 	processor_bluedot_ip_queue;
-    uint64_t 	processor_bluedot_ip_cache;
-    uint64_t	processor_bluedot_memory_slot;
-
-//    uint16_t 	processor_bluedot_hash_queue;
-    uint64_t 	processor_bluedot_hash_cache;
-//    uint64_t	processor_bluedot_memory_slot;
+    if ( json[ strlen(json) - 1 ] != '}' && json[ strlen(json) - 2 ] != '}' && json[ strlen(json) - 3 ] != '}' )
+        {
+            printf("bad again!\n");
+            return(false);
+        }
 
 
-};
+    return(true);
+}

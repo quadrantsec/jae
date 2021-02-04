@@ -32,6 +32,7 @@
 #include <pthread.h>
 #include <json.h>
 #include <netinet/in.h>
+#include <errno.h>
 
 
 #include "jae.h"
@@ -54,6 +55,7 @@ struct _Config *Config;
 struct _Counters *Counters;
 struct _Bluedot_Skip *Bluedot_Skip;
 
+struct _Bluedot_Cat_List *BluedotCatList = NULL;
 
 struct _Bluedot_IP_Cache *BluedotIPCache = NULL;
 struct _Bluedot_Hash_Cache *BluedotHashCache = NULL;
@@ -108,6 +110,111 @@ void Bluedot_Init( void )
         }
 
 
+}
+
+void Bluedot_Load_Categories ( void )
+{
+
+#define BUFFER_SIZE 512
+
+    FILE *bluedot_cat_file = NULL;
+    char buf[BUFFER_SIZE] = { 0 };
+
+    struct json_object *json_in = NULL;
+    struct json_object *string_obj = NULL;
+
+    uint16_t line_count = 0;
+
+    __atomic_store_n (&Counters->processors_bluedot_cat_count, 0, __ATOMIC_SEQ_CST);
+
+    JAE_Log(NORMAL, "Loading Bluedot categories [%s].", Config->processor_bluedot_categories);
+
+    if (( bluedot_cat_file = fopen(Config->processor_bluedot_categories, "r" )) == NULL )
+        {
+            JAE_Log(ERROR, "[%s, line %d] Failed to load %s.  %s!", __FILE__, __LINE__, Config->processor_bluedot_categories, strerror(errno) );
+        }
+
+    while(fgets(buf, BUFFER_SIZE, bluedot_cat_file) != NULL)
+        {
+
+            line_count++;
+
+            /* Skip comments, blank linkes */
+
+            if (buf[0] == '#' || buf[0] == 10 || buf[0] == ';' || buf[0] == 32)
+                {
+                    continue;
+                }
+            else
+                {
+
+                    Remove_Return( buf );
+
+                    /* Basic JSON validation */
+
+                    if ( Validate_JSON_Simple ( buf ) == false )
+                        {
+                            JAE_Log(ERROR, "[%s, line %d] JSON appears to be invalid at line %d in %s.  Can't find { } via Validate_JSON_Simple().",  __FILE__, __LINE__, line_count, Config->processor_bluedot_categories);
+                        }
+
+                    /* Parse JSON */
+
+                    json_in = json_tokener_parse( buf );
+
+                    if ( json_in == NULL )
+                        {
+                            JAE_Log(ERROR, "[%s, line %d] Unable to parse JSON \"%s\"", __FILE__, __LINE__, buf);
+                        }
+
+                    json_object_object_get_ex(json_in, "category", &string_obj);
+                    const char *category = json_object_get_string(string_obj);
+
+                    if ( category == NULL )
+                        {
+                            JAE_Log(ERROR, "[%s, line %d] Error.  No 'category' found at line %d in %s.", __FILE__, __LINE__, line_count, Config->processor_bluedot_categories);
+                        }
+
+                    json_object_object_get_ex(json_in, "code", &string_obj);
+                    const char *code = json_object_get_string(string_obj);
+
+                    if ( code == NULL )
+                        {
+                            JAE_Log(ERROR, "[%s, line %d] Error.  No 'code' found at line %d in %s.", __FILE__, __LINE__, line_count, Config->processor_bluedot_categories);
+                        }
+
+                    json_object_object_get_ex(json_in, "description", &string_obj);
+                    const char *description = json_object_get_string(string_obj);
+
+                    if ( description == NULL )
+                        {
+                            JAE_Log(ERROR, "[%s, line %d] Error.  No 'code' found at line %d in %s.", __FILE__, __LINE__, line_count, Config->processor_bluedot_categories);
+                        }
+
+                    /* Allocate memory for new Bluedot category */
+
+                    BluedotCatList = (_Bluedot_Cat_List *) realloc(BluedotCatList, (Counters->processors_bluedot_cat_count+1) * sizeof(_Bluedot_Cat_List));
+
+                    if ( BluedotCatList == NULL )
+                        {
+                            JAE_Log(ERROR, "[%s, line %d] Failed to reallocate memory for BluedotCatList. Abort!", __FILE__, __LINE__);
+                        }
+
+                    memset(&BluedotCatList[Counters->processors_bluedot_cat_count], 0, sizeof(_Bluedot_Cat_List));
+
+                    strlcpy(BluedotCatList[Counters->processors_bluedot_cat_count].category, category, BLUEDOT_CAT_CATEGORY);
+                    strlcpy(BluedotCatList[Counters->processors_bluedot_cat_count].description, description, BLUEDOT_CAT_DESCRIPTION);
+                    BluedotCatList[Counters->processors_bluedot_cat_count].code = atoi ( code );
+
+                    __atomic_add_fetch(&Counters->processors_bluedot_cat_count, 1, __ATOMIC_SEQ_CST);
+
+                    json_object_put(json_in);
+
+                }
+
+        }
+
+
+    JAE_Log(NORMAL, "Loaded %d Bluedot categories.", Counters->processors_bluedot_cat_count);
 }
 
 
@@ -271,7 +378,7 @@ uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Blu
 
                             if (Debug->bluedot)
                                 {
-                                    JAE_Log(DEBUG, "[%s, line %d] Done waiting, got %s out of BluedotIPCache.", __FILE__, __LINE__, JSON_Key_String[json_position].json);
+                                    JAE_Log(DEBUG, "[%s, line %d] Done waiting, got %s out of BluedotIPCache with a category \"%s\".", __FILE__, __LINE__, JSON_Key_String[json_position].json, BluedotIPCache[i].category);
                                 }
 
 
@@ -327,7 +434,7 @@ uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Blu
 
                             if (Debug->bluedot)
                                 {
-                                    JAE_Log(DEBUG, "[%s, line %d] Pulled hash '%s' from Bluedot hash cache with category of \"%d\".", __FILE__, __LINE__, JSON_Key_String[json_position].json, BluedotHashCache[i].alertid);
+//                                    JAE_Log(DEBUG, "[%s, line %d] Pulled hash '%s' from Bluedot hash cache with category of \"%s\".", __FILE__, __LINE__, JSON_Key_String[json_position].json, BluedotHashCache[i].category);
                                 }
 
                             // ADD TO JSON
@@ -466,7 +573,6 @@ uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Blu
 
         }
 
-    /* Do we have cache space? If not allocate more! */
 
     /* Add entries to cache */
 
@@ -494,9 +600,7 @@ uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Blu
                             JAE_Log(DEBUG, "[%s, line %d] Increasing BluedotIPCache cache size by %d. Cache size is now %" PRIu64 "", __FILE__, __LINE__, BLUEDOT_DEFAULT_MEMORY_SLOTS, Counters->processor_bluedot_memory_slot + BLUEDOT_DEFAULT_MEMORY_SLOTS);
                         }
 
-
                 }
-
 
             /* MAKE THIS A FUNCTION? */
 
@@ -670,8 +774,6 @@ uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Blu
             Counters->processor_bluedot_ip_cache++;
 
             pthread_mutex_unlock(&JAEBluedotIPWorkMutex);
-
-
 
         }
 
@@ -867,9 +969,7 @@ void Bluedot_Clean_Cache(void)
 
     memset(TmpBluedotIPCache, 0, Counters->processor_bluedot_ip_cache * sizeof(_Bluedot_IP_Cache));
 
-
     // Counters->processor_bluedot_memory_slot <- Number of slots.
-
 
     for (i=0; i < Counters->processor_bluedot_ip_cache; i++ )
         {
@@ -941,7 +1041,7 @@ uint16_t Check_IP_Cache ( struct _JSON_Key_String *JSON_Key_String, struct _Blue
 
                     if (Debug->bluedot)
                         {
-                            JAE_Log(DEBUG, "[%s, line %d] Pulled %s from Bluedot cache with category of \"%d\". [cdate_epoch: %d / mdate_epoch: %d]", __FILE__, __LINE__, JSON_Key_String[json_position].json, BluedotIPCache[i].code, BluedotIPCache[i].cdate_utime, BluedotIPCache[i].mdate_utime);
+                            JAE_Log(DEBUG, "[%s, line %d] Pulled %s from BluedotIPCache with category of \"%s\" [code: %d, cdate_epoch: %d / mdate_epoch: %d]", __FILE__, __LINE__, JSON_Key_String[json_position].json, BluedotIPCache[i].category, BluedotIPCache[i].code, BluedotIPCache[i].cdate_utime, BluedotIPCache[i].mdate_utime);
                         }
 
                     snprintf(JSON_Key_String[json_count].key, MAX_JSON_KEY, ".bluedot.mtime_epoch");

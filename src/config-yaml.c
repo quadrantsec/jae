@@ -684,6 +684,15 @@ void Load_YAML_Config( const char *yaml_file )
                                         }
                                 }
 
+                            if ( !strcmp(last_pass, "categories" ) && Config->processor_bluedot_flag == true )
+                                {
+                                    // NEEDS A DEFAULT?
+                                    strlcpy( Config->processor_bluedot_categories, var_to_value, MAX_PATH );
+                                    Bluedot_Load_Categories();
+
+                                }
+
+
                             if ( !strcmp(last_pass, "ip-queue" ) && Config->processor_bluedot_flag == true )
                                 {
 

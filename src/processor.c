@@ -59,6 +59,10 @@ pthread_mutex_t InputWorkMutex;
 void Processor (void)
 {
 
+#ifdef HAVE_SYS_PRCTL_H
+    (void)SetThreadName("JAEprocessor");
+#endif
+
     uint16_t i = 0;
     uint16_t json_count = 0;
 
@@ -81,11 +85,6 @@ void Processor (void)
         }
 
     memset(Input_Batch_LOCAL, 0, sizeof(struct _Input_Batch));
-
-
-#ifdef HAVE_SYS_PRCTL_H
-    (void)SetThreadName("JAEprocessor");
-#endif
 
     while (Global_Death == false )
         {

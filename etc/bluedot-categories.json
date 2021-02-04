@@ -1,0 +1,10 @@
+{ "category":"Neutral", "code": 0, "description": "Nothing is known about his object" }
+{ "category":"Whitelisted", "code": 1, "description":"Object is known not to be a threat" }
+{ "category":"Client", "code": 2, "description":"This field is NOT LONGER USED" }
+{ "category":"Malicious", "code": 3, "description":"Object is known to be malicious" }
+{ "category":"Honeypot", "code": 4, "description":"IP address  has been observed on our Internet facing global honeypots" }
+{ "category":"Advisory", "code": 5, "description":"Object has an advisory by an outside party" }
+{ "category":"Scanner", "code": 6, "description":"IP address has been observed scanning the Internet" }
+{ "category":"Tor", "code": 7, "description":"IP address is a know TOR (The Onion Router) IP address." }
+{ "category":"Proxy", "code": 8, "description":"IP address is a known proxy not related to Tor" }
+

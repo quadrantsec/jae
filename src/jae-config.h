@@ -93,6 +93,8 @@ struct _Config
     uint64_t processor_bluedot_dns_last_lookup;
     char processor_bluedot_ip[64];
 
+    char processor_bluedot_categories[MAX_PATH];
+
     uint16_t processor_bluedot_ip_queue;
     uint16_t processor_bluedot_hash_queue;
     uint16_t processor_bluedot_url_queue;

@@ -17,6 +17,7 @@ AUTOMAKE_OPIONS=foreign no-dependencies subdir-objects
 						       util-strlcat.c \
 						       util-tcpip.c \
 						       util-file.c \
+						       util-json.c \
 						       lockfile.c \
 						       signal-handler.c \
 						       batch.c \
