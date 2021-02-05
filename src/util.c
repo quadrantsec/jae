@@ -304,6 +304,7 @@ void Set_Pipe_Size ( FILE *fd )
 
                     JAE_Log(NORMAL, "Named pipe capacity is %d bytes.  Changing to %d bytes.", current_fifo_size, Config->input_named_pipe_size);
 
+
                     fd_results = fcntl(fd_int, F_SETPIPE_SZ, Config->input_named_pipe_size );
 
                     if ( fd_results == -1 )
@@ -313,7 +314,7 @@ void Set_Pipe_Size ( FILE *fd )
 
                     if ( fd_results > Config->input_named_pipe_size )
                         {
-                            JAE_Log(WARN, "Named pipe  capacity was rounded up to the next page size of %d bytes.", fd_results);
+                            JAE_Log(WARN, "Named pipe capacity was rounded up to the next page size of %d bytes.", fd_results);
                         }
                 }
         }

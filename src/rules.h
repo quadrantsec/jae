@@ -25,7 +25,6 @@
 
 #include <pcre.h>
 
-
 #include "jae-defs.h"
 
 #define 	MAX_IP_SIZE			64
@@ -135,10 +134,12 @@ struct _Rules
 
     uint8_t bluedot_count;
     char bluedot_key[MAX_BLUEDOT][MAX_BLUEDOT_KEY_SIZE];
+    uint8_t bluedot_code[MAX_BLUEDOT];
     uint8_t bluedot_type[MAX_BLUEDOT];
     bool bluedot_alert[MAX_BLUEDOT];
     uint8_t bluedot_match_count;
-
+    char bluedot_description[MAX_BLUEDOT][128];  /* This should be BLUEDOT_CAT_DESCRIPTION not 128 */
+    char bluedot_category[MAX_BLUEDOT][16];	 /* Should be BLUEDOT_CAT_CATEGORY */
 
 
 };

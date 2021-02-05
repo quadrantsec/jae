@@ -130,8 +130,8 @@ void Engine( struct _JSON_Key_String *JSON_Key_String, uint16_t json_count )
                     for ( s_position = 0; s_position < Rules[rule_position].bluedot_count; s_position++ )
                         {
 
-                            if ( Rules[rule_position].bluedot_alert[s_position] == BLUEDOT_ALERT_ALERT )
-                                {
+//                            if ( Rules[rule_position].bluedot_alert[s_position] == BLUEDOT_ALERT_ALERT )
+//                                {
 
 
                                     if ( !strcmp(JSON_Key_String[json_position].key, Rules[rule_position].bluedot_key[s_position] ) )
@@ -151,6 +151,15 @@ void Engine( struct _JSON_Key_String *JSON_Key_String, uint16_t json_count )
                                             Bluedot_Clean_Cache_Check();
 
                                             json_count = Bluedot_Add_JSON( JSON_Key_String, Bluedot_Return, json_count, rule_position, json_position, s_position );
+
+					    printf("Need %d got %d\n", Rules[rule_position].bluedot_code[s_position], Bluedot_Return->code );
+
+					    if ( Rules[rule_position].bluedot_code[s_position] == Bluedot_Return->code && Rules[rule_position].bluedot_alert[s_position] == true )
+					    		{
+							printf("Got code!\n");
+							match++; 
+							}
+
 
 
                                             //printf("JSON Count: %d, Bluedot_Return: %d\n", json_count, Bluedot_Return->code);
@@ -174,7 +183,7 @@ void Engine( struct _JSON_Key_String *JSON_Key_String, uint16_t json_count )
                                         }
 
 
-                                }
+//                                }
                         }
 
                 }
@@ -184,8 +193,7 @@ void Engine( struct _JSON_Key_String *JSON_Key_String, uint16_t json_count )
 
             /* Was "Search" / "Pcre" successful? */
 
-            if ( match == Rules[rule_position].search_string_count + Rules[rule_position].pcre_count ) //+
-//                    Rules[rule_position].bluedot_count )
+            if ( match == Rules[rule_position].search_string_count + Rules[rule_position].pcre_count + Rules[rule_position].bluedot_match_count )
                 {
 
                     /* Add alert items to our array */

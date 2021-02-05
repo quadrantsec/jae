@@ -28,8 +28,8 @@
 typedef struct _Classifications _Classifications;
 struct _Classifications
 {
-    char shortname[MAX_RULE_CLASSIFICATION];
-    char desc[MAX_RULE_CLASSIFICATION_DESC];
+    char category[MAX_RULE_CLASSIFICATION];
+    char description[MAX_RULE_CLASSIFICATION_DESC];
     uint8_t priority;
 };
 

@@ -104,6 +104,8 @@ void Input_Named_Pipe(void)
 
             JAE_Log(NORMAL, "Successfully opened named pipe (%s).", Config->input_named_pipe);
 
+/* DEBUG: MOVE THIS TO INIT or TO A SIGNLE THREAD? */
+
 #if defined(HAVE_GETPIPE_SZ) && defined(HAVE_SETPIPE_SZ)
             Set_Pipe_Size(fd);
 #endif

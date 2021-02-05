@@ -34,8 +34,6 @@
 #include <pcre.h>
 #include <netinet/in.h>
 
-
-
 #include "jae-defs.h"
 #include "jae.h"
 #include "jae-config.h"
@@ -814,6 +812,7 @@ void Load_Ruleset( const char *ruleset )
 
                                     for ( k = 0; k < json_count; k++ )
                                         {
+
                                             snprintf(tmpkey, MAX_JSON_KEY, ".bluedot.%d.type", a);
                                             tmpkey[ sizeof(tmpkey) - 1] = '\0';
 
@@ -831,6 +830,26 @@ void Load_Ruleset( const char *ruleset )
                                                         }
 
                                                 }
+
+					    snprintf(tmpkey, MAX_JSON_KEY, ".bluedot.%d.category", a);
+                                            tmpkey[ sizeof(tmpkey) - 1] = '\0';
+
+                                            if ( !strcmp( JSON_Key_String[k].key, tmpkey ) )
+                                                {
+
+						//int8_t category = Bluedot_Category_Lookup( JSON_Key_String[k].json, Rules[Counters->rules].bluedot_description[count], BLUEDOT_CAT_DESCRIPTION );
+
+						Rules[Counters->rules].bluedot_code[count] = Bluedot_Category_Lookup( JSON_Key_String[k].json, Rules[Counters->rules].bluedot_description[count], BLUEDOT_CAT_DESCRIPTION );
+
+						if ( Rules[Counters->rules].bluedot_code[count] == -1 ) 
+							{
+							JAE_Log( ERROR, "[%s, line %d] Bluedot category \"%s\" is invalid at line %d", __FILE__, __LINE__, JSON_Key_String[k].json, line_count );
+							}
+
+						strlcpy( Rules[Counters->rules].bluedot_category[count], JSON_Key_String[k].json, BLUEDOT_CAT_CATEGORY ); 
+
+                                                }
+
 
                                             snprintf(tmpkey, MAX_JSON_KEY, ".bluedot.%d.alert", a);
                                             tmpkey[ sizeof(tmpkey) - 1] = '\0';

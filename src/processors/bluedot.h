@@ -29,7 +29,7 @@
 
 
 #define		BLUEDOT_CAT_CATEGORY		16
-#define		BLUEDOT_CAT_DESCRIPTION		32
+#define		BLUEDOT_CAT_DESCRIPTION		128
 
 typedef struct _Bluedot_Cat_List _Bluedot_Cat_List;
 struct _Bluedot_Cat_List
@@ -123,4 +123,5 @@ uint16_t Check_IP_Cache ( struct _JSON_Key_String *JSON_Key_String, struct _Blue
 void Bluedot_Clean_Cache_Check ( void );
 void Bluedot_Clean_Cache( void );
 void Bluedot_Load_Categories ( void );
+int8_t Bluedot_Category_Lookup( const char *category, char *str, size_t size );
 

@@ -1,0 +1,50 @@
+{ "category":"correlated-attack", "priority": 1, "description":"Correlated Attack" }
+{ "category":"unsuccessful-admin", "priority": 1, "description":"Unsuccessful Admin Privilege Gain" }
+{ "category":"exploit-attempt", "priority": 1, "description":"Exploit Attempt" }
+{ "category":"program-error", "priority": 2, "description":"Program Error" }
+{ "category":"suspicious-command", "priority": 1, "description":"Suspicious Command Execution" }
+{ "category":"network-event", "priority": 2, "description":"Network event" }
+{ "category":"system-event", "priority": 2, "description":"System event" }
+{ "category":"configuration-change", "priority": 2, "description":"Configuration Change" }
+{ "category":"spam", "priority": 3, "description":"Spam" }
+{ "category":"permissions-violation", "priority": 3, "description":"Attempted Access To File or Directory" }
+{ "category":"suspicious-traffic", "priority": 2, "description":"Suspicious Traffic" }
+{ "category":"configuration-error", "priority": 2, "description":"Configuration Error" }
+{ "category":"hardware-event", "priority": 1, "description":"Hardware Event" }
+{ "category":"not-suspicious", "priority": 3, "description":"Not Suspicious Traffic" }
+{ "category":"unknown", "priority": 3, "description":"Unknown Traffic" }
+{ "category":"bad-unknown", "priority":  2, "description":"Potentially Bad Traffic" }
+{ "category":"attempted-recon", "priority": 2, "description":"Attempted Information Leak" }
+{ "category":"successful-recon-limited", "priority": 2, "description":"Information Leak" }
+{ "category":"successful-recon-largescale", "priority": 2, "description":"Large Scale Information Leak" }
+{ "category":"attempted-dos", "priority": 2, "description":"Attempted Denial of Service" }
+{ "category":"successful-dos", "priority": 2, "description":"Denial of Service" }
+{ "category":"attempted-user", "priority": 1, "description":"Attempted User Privilege Gain" }
+{ "category":"unsuccessful-user", "priority": 1, "description":"Unsuccessful User Privilege Gain" }
+{ "category":"successful-user", "priority": 1, "description":"Successful User Privilege Gain" }
+{ "category":"attempted-admin", "priority": 1, "description":"Attempted Administrator Privilege Gain" }
+{ "category":"successful-admin", "priority": 1, "description":"Successful Administrator Privilege Gain" }
+{ "category":"rpc-portmap-decode", "priority": 2, "description":"Decode of an RPC Query" }
+{ "category":"shellcode-detect", "priority": 1, "description":"Executable code was detected" }
+{ "category":"string-detect", "priority": 3, "description":"A suspicious string was detected" }
+{ "category":"suspicious-filename-detect", "priority": 2, "description":"A suspicious filename was detected" }
+{ "category":"suspicious-login", "priority": 2, "description":"An attempted login using a suspicious username was detected" }
+{ "category":"system-call-detect", "priority": 2, "description":"A system call was detected" }
+{ "category":"tcp-connection", "priority": 4, "description":"A TCP connection was detected" }
+{ "category":"trojan-activity", "priority":  1, "description":"A Network Trojan was detected" }
+{ "category":"unusual-client-port-connection", "priority": 2, "description":"A client was using an unusual port" }
+{ "category":"network-scan", "priority": 3, "description":"Detection of a Network Scan" }
+{ "category":"denial-of-service", "priority": 2, "description":"Detection of a Denial of Service Attack" }
+{ "category":"non-standard-protocol", "priority": 2, "description":"Detection of a non-standard protocol or event" }
+{ "category":"protocol-command-decode", "priority": 3, "description":"Generic Protocol Command Decode" }
+{ "category":"web-application-activity", "priority": 2, "description":"access to a potentially vulnerable web application" }
+{ "category":"web-application-attack", "priority": 1, "description":"Web Application Attack" }
+{ "category":"misc-activity", "priority": 3, "description":"Misc activity" }
+{ "category":"misc-attack", "priority": 2, "description":"Misc Attack" }
+{ "category":"icmp-event", "priority": 3, "description":"Generic ICMP event" }
+{ "category":"porn", "priority": 2, "description":"Pornography" }
+{ "category":"policy-violation", "priority": 1, "description":"Potential Corporate Privacy Violation" }
+{ "category":"default-login-attempt", "priority": 2, "description":"Attempt to login by a default username and password" }
+{ "category":"dynamic-rules", "priority": 2, "description":"Dynamic loaded rules" }
+{ "category":"system-error", "priority": 2, "description":"System Error" }
+{ "category":"fingerprint", "priority": 3, "description":"Device fingerprint detected" }

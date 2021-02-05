@@ -37,6 +37,7 @@
 #include <errno.h>
 #include <string.h>
 #include <stdint.h>
+#include <json.h>
 
 #include "version.h"
 
@@ -59,100 +60,127 @@ struct _Classifications *Classifications = NULL;
 void Load_Classifications( void )
 {
 
-    FILE *classfile;
+#define BUFFER_SIZE 512
 
-    char classbuf[128] = { 0 };
+    FILE *cat_file = NULL;
+    char buf[BUFFER_SIZE] = { 0 };
 
-    char *saveptr=NULL;
-    char *tmptoken=NULL;
-    char *laststring=NULL;
+    struct json_object *json_in = NULL;
+    struct json_object *string_obj = NULL;
 
-    char tmpbuf2[5] = { 0 };
-
-    uint16_t  linecount=0;
+    uint16_t line_count = 0;
 
     __atomic_store_n (&Counters->classifications, 0, __ATOMIC_SEQ_CST);
 
-    JAE_Log(NORMAL, "Loading classifications.conf file. [%s]", Config->classifications_file);
+    JAE_Log(NORMAL, "Loading classifications [%s].", Config->classifications_file);
 
-    if (( classfile = fopen(Config->classifications_file, "r" )) == NULL )
+    if (( cat_file = fopen(Config->classifications_file, "r" )) == NULL )
         {
-            JAE_Log(ERROR, "[%s, line %d] Cannot open rule file %s. [%s]", __FILE__,  __LINE__, Config->classifications_file, strerror(errno) );
+            JAE_Log(ERROR, "[%s, line %d] Failed to load %s.  %s!", __FILE__, __LINE__, Config->classifications_file, strerror(errno) );
         }
 
-    while(fgets(classbuf, sizeof(classbuf), classfile) != NULL)
+    while(fgets(buf, BUFFER_SIZE, cat_file) != NULL)
         {
 
-            linecount++;
+            line_count++;
 
-            /* Skip comments and blank linkes */
+            /* Skip comments, blank linkes */
 
-            if (classbuf[0] == '#' || classbuf[0] == 10 || classbuf[0] == ';' || classbuf[0] == 32)
+            if (buf[0] == '#' || buf[0] == 10 || buf[0] == ';' || buf[0] == 32)
                 {
                     continue;
                 }
+            else
+                {
 
-            /* Allocate memory for classifications,  but not comments */
+                    Remove_Return( buf );
 
-            Classifications = (_Classifications *) realloc(Classifications, (Counters->classifications+1) * sizeof(_Classifications));
+                    /* Basic JSON validation */
 
+                    if ( Validate_JSON_Simple ( buf ) == false )
+                        {
+                            JAE_Log(ERROR, "[%s, line %d] JSON appears to be invalid at line %d in %s.  Can't find { } via Validate_JSON_Simple().",  __FILE__, __LINE__, line_count, Config->classifications_file);
+                        }
+
+                    /* Parse JSON */
+
+                    json_in = json_tokener_parse( buf );
+
+                    if ( json_in == NULL )
+                        {
+                            JAE_Log(ERROR, "[%s, line %d] Unable to parse JSON \"%s\"", __FILE__, __LINE__, buf);
+                        }
+
+
+/*
+                    json_object_object_get_ex(json_in, "category", &string_obj);
+                    const char *category = json_object_get_string(string_obj);
+
+                    if ( category == NULL )
+                        {
+                            JAE_Log(ERROR, "[%s, line %d] Error.  No 'category' found at line %d in %s.", __FILE__, __LINE__, line_count, Config->processor_bluedot_categories);
+                        }
+
+                    json_object_object_get_ex(json_in, "code", &string_obj);
+                    const char *code = json_object_get_string(string_obj);
+
+                    if ( code == NULL )
+                        {
+                            JAE_Log(ERROR, "[%s, line %d] Error.  No 'code' found at line %d in %s.", __FILE__, __LINE__, line_count, Config->processor_bluedot_categories);
+                        }
+
+*/
+                    json_object_object_get_ex(json_in, "category", &string_obj);
+                    const char *category = json_object_get_string(string_obj);
+
+                    if ( category == NULL )
+                        {
+                            JAE_Log(ERROR, "[%s, line %d] Error.  No 'category' found at line %d in %s.", __FILE__, __LINE__, line_count, Config->classifications_file);
+                        }
+
+                    json_object_object_get_ex(json_in, "description", &string_obj);
+                    const char *description = json_object_get_string(string_obj);
+
+                    if ( description == NULL )
+                        {
+                            JAE_Log(ERROR, "[%s, line %d] Error.  No 'description' found at line %d in %s.", __FILE__, __LINE__, line_count, Config->classifications_file);
+                        }
+
+                    json_object_object_get_ex(json_in, "priority", &string_obj);
+                    const char *priority = json_object_get_string(string_obj);
+
+                    if ( priority == NULL )
+                        {
+                            JAE_Log(ERROR, "[%s, line %d] Error.  No 'prioity' found at line %d in %s.", __FILE__, __LINE__, line_count, Config->classifications_file);
+                        }
+
+
+                    /* Allocate memory for new classification */
+
+		    Classifications = (_Classifications *) realloc(Classifications, (Counters->classifications+1) * sizeof(_Classifications));
+		    	
             if ( Classifications == NULL )
-                {
-                    JAE_Log(ERROR, "[%s, line %d] Failed to reallocate memory for _Classifications. Abort!", __FILE__, __LINE__);
+                   {
+                       JAE_Log(ERROR, "[%s, line %d] Failed to reallocate memory for _Classifications. Abort!", __FILE__, __LINE__);
+                    }
+
+		    memset(&Classifications[Counters->classifications], 0, sizeof(struct _Classifications));
+
+		    strlcpy(Classifications[Counters->classifications].category, category, MAX_RULE_CLASSIFICATION);
+		    strlcpy(Classifications[Counters->classifications].description, description, MAX_RULE_CLASSIFICATION_DESC);
+		    Classifications[Counters->classifications].priority = atoi( priority );
+
+                    __atomic_add_fetch(&Counters->classifications, 1, __ATOMIC_SEQ_CST);
+
+
+                    json_object_put(json_in);
+
                 }
-
-            memset(&Classifications[Counters->classifications], 0, sizeof(struct _Classifications));
-
-            strtok_r(classbuf, ":", &saveptr);
-            tmptoken = strtok_r(NULL, ":", &saveptr);
-
-            laststring = strtok_r(tmptoken, ",", &saveptr);
-
-            if ( laststring == NULL )
-                {
-                    JAE_Log(ERROR, "[%s, line %d] The file %s at line %d is improperly formated. Abort!", __FILE__, __LINE__, Config->classifications_file, linecount);
-                }
-
-            Remove_Spaces(laststring);
-            strlcpy(Classifications[Counters->classifications].shortname, laststring, sizeof(Classifications[Counters->classifications].shortname));
-
-            laststring = strtok_r(NULL, ",", &saveptr);
-
-            if ( laststring == NULL )
-                {
-                    JAE_Log(ERROR, "[%s, line %d] The file %s at line %d is improperly formated. Abort!", __FILE__, __LINE__, Config->classifications_file, linecount);
-                }
-
-            strlcpy(Classifications[Counters->classifications].desc, laststring, sizeof(Classifications[Counters->classifications].desc));
-
-            laststring = strtok_r(NULL, ",", &saveptr);
-
-            if ( laststring == NULL )
-                {
-                    JAE_Log(ERROR, "[%s, line %d] The file %s at line %d is improperly formated. Abort!", __FILE__, __LINE__, Config->classifications_file, linecount);
-                }
-
-            strlcpy(tmpbuf2, laststring, sizeof(tmpbuf2));
-            Classifications[Counters->classifications].priority=atoi(tmpbuf2);
-
-            if ( Classifications[Counters->classifications].priority == 0 )
-                {
-                    JAE_Log(ERROR, "[%s, line %d] Classification error at line number %d in %s", __FILE__, __LINE__, linecount, Config->classifications_file);
-                }
-
-            /*
-                        if (debug->debugload)
-                            {
-                                JAE_Log(DEBUG, "[D-%d] Classification: %s|%s|%d", Counters->classifications, Classifications[Counters->classifications].shortname, Classifications[Counters->classifications].desc, Classifications[Counters->classifications].priority);
-                            }
-            */
-
-            __atomic_add_fetch(&Counters->classifications, 1, __ATOMIC_SEQ_CST);
 
         }
-    fclose(classfile);
 
-    JAE_Log(NORMAL, "%d classifications loaded", Counters->classifications);
+
+    JAE_Log(NORMAL, "Loaded %d classifications.", Counters->classifications);
 
 }
 
@@ -164,20 +192,21 @@ void Load_Classifications( void )
 int16_t Classtype_Lookup( const char *classtype, char *str, size_t size )
 {
 
+
     uint16_t i = 0;
 
     for (i = 0; i < Counters->classifications; i++)
         {
 
-            if (!strcmp(classtype, Classifications[i].shortname))
+            if (!strcmp(classtype, Classifications[i].category))
                 {
-                    snprintf(str, size, "%s", Classifications[i].desc);
+                    snprintf(str, size, "%s", Classifications[i].description);
                     return 0;
                 }
         }
 
     snprintf(str, sizeof("UNKNOWN"), "UNKNOWN");
     return -1;
+ 
 }
-
 
