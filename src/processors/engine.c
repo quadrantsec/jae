@@ -130,68 +130,42 @@ void Engine( struct _JSON_Key_String *JSON_Key_String, uint16_t json_count )
                     for ( s_position = 0; s_position < Rules[rule_position].bluedot_count; s_position++ )
                         {
 
-//                            if ( Rules[rule_position].bluedot_alert[s_position] == BLUEDOT_ALERT_ALERT )
-//                                {
 
+                            if ( !strcmp(JSON_Key_String[json_position].key, Rules[rule_position].bluedot_key[s_position] ) )
+                                {
 
-                                    if ( !strcmp(JSON_Key_String[json_position].key, Rules[rule_position].bluedot_key[s_position] ) )
+                                    struct _Bluedot_Return *Bluedot_Return = NULL;
+
+                                    Bluedot_Return = malloc(sizeof(struct _Bluedot_Return));
+
+                                    if ( Bluedot_Return == NULL )
                                         {
-
-                                            struct _Bluedot_Return *Bluedot_Return = NULL;
-
-                                            Bluedot_Return = malloc(sizeof(struct _Bluedot_Return));
-
-                                            if ( Bluedot_Return == NULL )
-                                                {
-                                                    JAE_Log(ERROR, "[%s, line %d] Failed to allocate memory for _Bluedot_Return. Abort!", __FILE__, __LINE__);
-                                                }
-
-                                            memset(Bluedot_Return, 0, sizeof(_Bluedot_Return));
-
-                                            Bluedot_Clean_Cache_Check();
-
-                                            json_count = Bluedot_Add_JSON( JSON_Key_String, Bluedot_Return, json_count, rule_position, json_position, s_position );
-
-					    printf("Need %d got %d\n", Rules[rule_position].bluedot_code[s_position], Bluedot_Return->code );
-
-					    if ( Rules[rule_position].bluedot_code[s_position] == Bluedot_Return->code && Rules[rule_position].bluedot_alert[s_position] == true )
-					    		{
-							printf("Got code!\n");
-							match++; 
-							}
-
-
-
-                                            //printf("JSON Count: %d, Bluedot_Return: %d\n", json_count, Bluedot_Return->code);
-
-
-                                            free(Bluedot_Return);
-
-
-                                            // Do lookup .  this way we can get json_count = Bluedot (like normalize);
-                                            //           Return a bluedot.json_key array?
-                                            // Take that data and do the analysis (should it fire, should it not).
-
-                                            /*
-                                                                                        if ( Bluedot( JSON_Key_String, rule_position, s_position, json_position, json_count ) == true )
-                                                                                            {
-                                                                                                printf("BLUEDOT MATCH\n");
-                                                                                                match++;
-                                                                                            }
-
-                                            						*/
+                                            JAE_Log(ERROR, "[%s, line %d] Failed to allocate memory for _Bluedot_Return. Abort!", __FILE__, __LINE__);
                                         }
 
+                                    memset(Bluedot_Return, 0, sizeof(_Bluedot_Return));
 
-//                                }
+                                    Bluedot_Clean_Cache_Check();
+
+                                    json_count = Bluedot_Add_JSON( JSON_Key_String, Bluedot_Return, json_count, rule_position, json_position, s_position );
+
+                                    if ( Rules[rule_position].bluedot_code[s_position] == Bluedot_Return->code && Rules[rule_position].bluedot_alert[s_position] == true )
+                                        {
+                                            match++;
+                                        }
+
+                                    //printf("JSON Count: %d, Bluedot_Return: %d\n", json_count, Bluedot_Return->code);
+
+                                    free(Bluedot_Return);
+
+                                }
+
                         }
 
                 }
 
-//            printf("search_count = %d + pcre_count = %d,  bluedot_count = %d,  match = %d\n", Rules[rule_position].search_string_count, Rules[rule_position].pcre_count, Rules[rule_position].bluedot_count, match);
 
-
-            /* Was "Search" / "Pcre" successful? */
+            /* Was "Search" / "Pcre" / "Bluedot" successful? */
 
             if ( match == Rules[rule_position].search_string_count + Rules[rule_position].pcre_count + Rules[rule_position].bluedot_match_count )
                 {

@@ -102,7 +102,6 @@ void Processor (void)
                     /* DEBUG STUFF HERE */
 
                     strlcpy(Input_Batch_LOCAL[i].input, Input_Batch[i].input, MAX_JSON_SIZE);
-//                    printf("GOT: %s\n", Input_Batch_LOCAL[i].input);
 
                 }
 
@@ -111,9 +110,6 @@ void Processor (void)
             __atomic_add_fetch(&processor_running_threads, 1, __ATOMIC_SEQ_CST);
 
             /* Process LOCAL data */
-
-//           printf("DO WORK\n");
-
 
             for ( i = 0; i < Config->batch_size; i++ )
                 {
@@ -126,21 +122,7 @@ void Processor (void)
                         }
 
 
-                    // if json_count == 0, then it wasn't json! */
-
-                    // normalize/parse_ip first? To add 'keys'
-                    // DoEngineHere( JSON_Key_String );
-
-                    //printf("json_count: %d\n", json_count);
-
                     Engine( JSON_Key_String, json_count );
-
-                    /*
-                            for (i = 0; i < json_count; i++ )
-                                {
-                                    printf("[%d] Key: %s,  Value: %s\n", i, JSON_Key_String[i].key, JSON_Key_String[i].json);
-                                }
-                    */
 
                 }
 

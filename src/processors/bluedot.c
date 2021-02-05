@@ -1134,17 +1134,17 @@ uint16_t Check_IP_Cache ( struct _JSON_Key_String *JSON_Key_String, struct _Blue
 int8_t Bluedot_Category_Lookup( const char *category, char *str, size_t size )
 {
 
-uint16_t i = 0; 
+    uint16_t i = 0;
 
-	for ( i = 0; i < Counters->processors_bluedot_cat_count; i++ )
-		{
+    for ( i = 0; i < Counters->processors_bluedot_cat_count; i++ )
+        {
 
-		if ( !strcmp( BluedotCatList[i].category, category ) )
-			{
-			snprintf( str, size, "%s", BluedotCatList[i].description);
-			return( BluedotCatList[i].code );
-			}
-		}
+            if ( !strcmp( BluedotCatList[i].category, category ) )
+                {
+                    snprintf( str, size, "%s", BluedotCatList[i].description);
+                    return( BluedotCatList[i].code );
+                }
+        }
 
-return(-1);
+    return(-1);
 }

@@ -112,24 +112,24 @@ void Load_Classifications( void )
                         }
 
 
-/*
-                    json_object_object_get_ex(json_in, "category", &string_obj);
-                    const char *category = json_object_get_string(string_obj);
+                    /*
+                                        json_object_object_get_ex(json_in, "category", &string_obj);
+                                        const char *category = json_object_get_string(string_obj);
 
-                    if ( category == NULL )
-                        {
-                            JAE_Log(ERROR, "[%s, line %d] Error.  No 'category' found at line %d in %s.", __FILE__, __LINE__, line_count, Config->processor_bluedot_categories);
-                        }
+                                        if ( category == NULL )
+                                            {
+                                                JAE_Log(ERROR, "[%s, line %d] Error.  No 'category' found at line %d in %s.", __FILE__, __LINE__, line_count, Config->processor_bluedot_categories);
+                                            }
 
-                    json_object_object_get_ex(json_in, "code", &string_obj);
-                    const char *code = json_object_get_string(string_obj);
+                                        json_object_object_get_ex(json_in, "code", &string_obj);
+                                        const char *code = json_object_get_string(string_obj);
 
-                    if ( code == NULL )
-                        {
-                            JAE_Log(ERROR, "[%s, line %d] Error.  No 'code' found at line %d in %s.", __FILE__, __LINE__, line_count, Config->processor_bluedot_categories);
-                        }
+                                        if ( code == NULL )
+                                            {
+                                                JAE_Log(ERROR, "[%s, line %d] Error.  No 'code' found at line %d in %s.", __FILE__, __LINE__, line_count, Config->processor_bluedot_categories);
+                                            }
 
-*/
+                    */
                     json_object_object_get_ex(json_in, "category", &string_obj);
                     const char *category = json_object_get_string(string_obj);
 
@@ -157,18 +157,18 @@ void Load_Classifications( void )
 
                     /* Allocate memory for new classification */
 
-		    Classifications = (_Classifications *) realloc(Classifications, (Counters->classifications+1) * sizeof(_Classifications));
-		    	
-            if ( Classifications == NULL )
-                   {
-                       JAE_Log(ERROR, "[%s, line %d] Failed to reallocate memory for _Classifications. Abort!", __FILE__, __LINE__);
-                    }
+                    Classifications = (_Classifications *) realloc(Classifications, (Counters->classifications+1) * sizeof(_Classifications));
 
-		    memset(&Classifications[Counters->classifications], 0, sizeof(struct _Classifications));
+                    if ( Classifications == NULL )
+                        {
+                            JAE_Log(ERROR, "[%s, line %d] Failed to reallocate memory for _Classifications. Abort!", __FILE__, __LINE__);
+                        }
 
-		    strlcpy(Classifications[Counters->classifications].category, category, MAX_RULE_CLASSIFICATION);
-		    strlcpy(Classifications[Counters->classifications].description, description, MAX_RULE_CLASSIFICATION_DESC);
-		    Classifications[Counters->classifications].priority = atoi( priority );
+                    memset(&Classifications[Counters->classifications], 0, sizeof(struct _Classifications));
+
+                    strlcpy(Classifications[Counters->classifications].category, category, MAX_RULE_CLASSIFICATION);
+                    strlcpy(Classifications[Counters->classifications].description, description, MAX_RULE_CLASSIFICATION_DESC);
+                    Classifications[Counters->classifications].priority = atoi( priority );
 
                     __atomic_add_fetch(&Counters->classifications, 1, __ATOMIC_SEQ_CST);
 
@@ -207,6 +207,6 @@ int16_t Classtype_Lookup( const char *classtype, char *str, size_t size )
 
     snprintf(str, sizeof("UNKNOWN"), "UNKNOWN");
     return -1;
- 
+
 }
 
