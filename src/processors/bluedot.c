@@ -221,8 +221,6 @@ void Bluedot_Load_Categories ( void )
 uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Bluedot_Return *Bluedot_Return, uint16_t json_count, uint32_t rule_position, uint16_t json_position, uint8_t s_position )
 {
 
-    // use s_position to determine the nest depth!  bluedot.whatever.0
-
     int sockfd;
     struct sockaddr_in servaddr;
 
@@ -235,7 +233,6 @@ uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Blu
     char buff[BLUEDOT_JSON_SIZE] = { 0 };
 
     unsigned char ip_convert[MAX_IP_BIT_SIZE] = { 0 };
-
 
     char *jsonptr = NULL;
     char *jsonptr_f = NULL;
@@ -260,7 +257,6 @@ uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Blu
         }
 
     /* Check DNS TTL,  do lookup if nessesary */
-    /* DO LOOKUP in jae-config.c ( at start up !) */
 
     if ( bluedot_dns_global == 0 && epoch_time - Config->processor_bluedot_dns_last_lookup > Config->processor_bluedot_dns_ttl )
         {
@@ -301,6 +297,11 @@ uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Blu
             pthread_mutex_unlock(&JAE_DNS_Mutex);
 
         } /* end of DNS lookup */
+
+
+    /****************************************/
+    /* BLUEDOT_TYPE_IP - IP Address lookup! */
+    /****************************************/
 
     if ( Rules[rule_position].bluedot_type[s_position] == BLUEDOT_TYPE_IP )
         {
@@ -418,10 +419,11 @@ uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Blu
 
             snprintf(buff, sizeof(buff), "GET /%s%s%s HTTP/1.1\r\nHost: %s\r\n%s:%s:%s\r\nX-BLUEDOT-DEVICEID: %s\r\nConnection: close\r\n\r\n", Config->processor_bluedot_uri, BLUEDOT_IP_LOOKUP_URL, JSON_Key_String[json_position].json, Config->processor_bluedot_host, BLUEDOT_USER_AGENT, Config->cluster_name, Config->sensor_name, Config->processor_bluedot_device_id);
 
-        }
+        } /* End of BLUEDOT_TYPE_IP */
 
-
-    /* Sha/MD5/etc Hash */
+    /************************************************/
+    /* BLUEDOT_TYPE_HASH - Bluedot Sha/MD5/etc hash */
+    /************************************************/
 
     else if ( Rules[rule_position].bluedot_type[s_position] == BLUEDOT_TYPE_HASH )
         {
@@ -447,7 +449,7 @@ uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Blu
             // CHANGE BACK TO HASH!
             // HERE
 
-        }
+        } /* End of BLUEDOT_TYPE_HASH */
 
 
     /* Do the lookup! */
@@ -541,6 +543,8 @@ uint16_t Bluedot_Add_JSON( struct _JSON_Key_String *JSON_Key_String, struct _Blu
     Bluedot_Return->code = code_u8;
 
     /* IP addess specific codes (create time and modify time) */
+
+    /* DEBUG: Why is this seperate from function below */
 
     if ( Rules[rule_position].bluedot_type[s_position] == BLUEDOT_TYPE_IP )
         {
