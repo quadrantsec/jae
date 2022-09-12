@@ -1,0 +1,102 @@
+%YAML 1.1
+---
+
+#  ,-._,-.  Sagan-NG configuration file [http://sagan.quadrantsec.com]
+#  \/)"(\/  Champ Clark III & The Quadrant Infosec Team: http://quadrantsec.com
+#   (_o_)   Copyright (C) 2020 Quadrant Information Security., et al.
+#   /   \/)
+#  (|| ||)
+#   oo-oo 
+
+
+vars:
+
+    # Required variables. 
+
+    SENSOR_NAME: "Sensor_Name"
+    CLUSTER_NAME: "Cluster_Name"
+
+    # NOTE
+    # This will work for search '"string": "$ELSE";
+    ELSE: '[ "one", "two", "three" ]'
+
+    # But this will NOT
+    # ELSE: "frank" 
+
+    # "search": "one", "two", $ELSE"
+
+    RULE_PATH: "/usr/local/etc/jae-rules"
+    LOG_PATH: "/var/log/jae"
+
+    MESSAGE: ".MESSAGE"
+   
+    # Your variables
+
+    #FROMFILE: "file:/some/file/path"
+
+configuration:
+
+    runas: "sagan"
+    sensor-name: "$SENSOR_NAME"
+    cluster-name: "$CLUSTER_NAME"
+    max-threads: 5
+    batch-size: 1
+    classifications: "/home/champ/code/jae/etc/classifications.json"
+    lockfile: "/var/run/sagan_ng/sagan.pid"
+    normalize: "/home/champ/test/normalize.rulebase"
+    parse-ip: "pre"	# "pre" or "post" analysis
+
+processors:
+
+  bluedot:
+
+    enabled: yes
+    device-id: "JAE Engine"
+    timeout: 30		# Minutes
+    categories: "/usr/local/etc/jae-rules/bluedot-categories.json"
+
+    ip-queue: 100
+    hash-queue: 100
+    url-queue: 100
+    filename-queue: 100
+    ja3-queue: 100
+
+    host: "bluedot.example.com"
+    dns-ttl: 86400
+    uri: "intel.php?apikey=APIKEY"
+
+    skip-networks: "8.8.8.8/32, 8.8.4.4/32, 12.159.2.0/24"
+    #skip-networks: "file://tmp/skip_networks.txt"
+    skip-hashes: "hashnumber1, hashnumber2, hashnumber3"
+    #skip-hashes: "file://tmp/hashes.txt"
+    skip-url: "file://somefile.txt"
+    skip-ja3: "123,234"
+    skip-filename: "file://filenames.txt"
+
+
+input:
+
+  named-pipe:
+
+    enabled: yes
+    #named-pipe: "/var/sagan/test.fifo"
+    named-pipe: "/var/sagan/sagan.fifo"
+    size: 1048576
+    chown: yes
+
+
+output:
+
+  file: 
+
+    enabled: yes
+    output-file: "/tmp/somefile.json"
+    flatten-json: true
+    append-alert-data: true
+
+
+rule-files:
+
+  - /home/champ/test/new-test.json
+
+    
