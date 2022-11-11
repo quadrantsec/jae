@@ -40,8 +40,8 @@
 
 #include "parsers/json.h"
 
-struct _Counters *Counters;
-struct _Debug *Debug;
+extern struct _Counters *Counters;
+extern struct _Debug *Debug;
 
 uint16_t Parse_JSON ( const char *input, struct _JSON_Key_String *JSON_Key_String )
 {

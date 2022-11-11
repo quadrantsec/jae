@@ -53,7 +53,7 @@
 
 #include "version.h"
 
-struct _Config *Config;
+extern struct _Config *Config;
 
 
 /* Was using liblockfile but decided for portability reasons, it was a

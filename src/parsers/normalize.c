@@ -53,8 +53,8 @@ static ln_ctx ctx;
 //struct stat liblognorm_fileinfo;
 
 
-struct _Config *Config;
-struct _Rules *Rules;
+extern struct _Config *Config;
+extern struct _Rules *Rules;
 
 
 void Load_Normalize( void )

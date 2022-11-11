@@ -49,10 +49,10 @@
 #include "counters.h"
 #include "debug.h"
 
-struct _Counters *Counters;
-struct _Debug *Debug;
-struct _Counters *Counters;
-struct _Config *Config;
+extern struct _Counters *Counters;
+extern struct _Debug *Debug;
+extern struct _Counters *Counters;
+extern struct _Config *Config;
 
 struct _Classifications *Classifications = NULL;
 

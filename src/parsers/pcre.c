@@ -40,7 +40,7 @@
 
 #include "parsers/pcre.h"
 
-struct _Rules *Rules;
+extern struct _Rules *Rules;
 
 
 bool Pcre( uint32_t rule_position, uint8_t s_position, char *json )

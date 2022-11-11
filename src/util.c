@@ -49,9 +49,9 @@
 #include "counters.h"
 
 
-struct _Config *Config;
-struct _Counters *Counters;
-struct _Var *Var;
+extern struct _Config *Config;
+extern struct _Counters *Counters;
+extern struct _Var *Var;
 
 /**********************************
  * Shift a string to all lowercase

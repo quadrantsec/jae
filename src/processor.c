@@ -39,21 +39,21 @@
 
 #include "processors/engine.h"
 
-struct _Config *Config;
+extern struct _Config *Config;
 
-bool Global_Death;
+extern bool Global_Death;
 
 /* From batch.c */
 
-struct _Input_Batch *Input_Batch;
+extern struct _Input_Batch *Input_Batch;
 
-uint16_t batch_count;
-uint16_t processor_message_slot;
-uint16_t processor_running_threads;
+extern uint16_t batch_count;
+extern uint16_t processor_message_slot;
+extern uint16_t processor_running_threads;
 
 
-pthread_cond_t InputDoWork;
-pthread_mutex_t InputWorkMutex;
+extern pthread_cond_t InputDoWork;
+extern pthread_mutex_t InputWorkMutex;
 
 
 void Processor (void)

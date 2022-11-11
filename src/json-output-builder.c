@@ -40,8 +40,8 @@
 
 #include "parsers/json.h"
 
-struct _Rules *Rules;
-struct _Config *Config;
+extern struct _Rules *Rules;
+extern struct _Config *Config;
 
 void Output_JSON_Builder ( struct _JSON_Key_String *JSON_Key_String, uint16_t json_count, uint32_t rule_position, char *str, size_t size)
 {

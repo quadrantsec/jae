@@ -37,7 +37,7 @@
 #include "json-output-builder.h"
 #include "output-plugins/file.h"
 
-struct _Config *Config;
+extern struct _Config *Config;
 
 void Init_Output ( void )
 {

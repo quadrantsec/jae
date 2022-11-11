@@ -40,7 +40,7 @@
 #include "util.h"
 #include "lockfile.h"
 
-bool Global_Death;
+extern bool Global_Death;
 
 
 void Signal_Handler( void )

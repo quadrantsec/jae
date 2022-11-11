@@ -49,10 +49,10 @@
 #include "processors/engine.h"
 #include "processors/bluedot.h"
 
-struct _Rules *Rules;
-struct _Counters *Counters;
-struct _Config *Config;
-struct _Debug *Debug;
+extern struct _Rules *Rules;
+extern struct _Counters *Counters;
+extern struct _Config *Config;
+extern struct _Debug *Debug;
 
 
 void Engine( struct _JSON_Key_String *JSON_Key_String, uint16_t json_count )

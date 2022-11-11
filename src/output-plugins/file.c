@@ -36,7 +36,7 @@
 
 #include "parsers/json.h"
 
-struct _Config *Config;
+extern struct _Config *Config;
 
 
 void File_Init( void )

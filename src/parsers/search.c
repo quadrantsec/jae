@@ -43,7 +43,7 @@
 
 #include "processors/engine.h"
 
-struct _Rules *Rules;
+extern struct _Rules *Rules;
 //struct _Counters *Counters;
 
 

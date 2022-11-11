@@ -48,11 +48,11 @@
 
 #include "input-plugins/named-pipe.h"
 
-struct _Config *Config;
-struct _Counters *Counters;
-struct _Debug *Debug;
+extern struct _Config *Config;
+extern struct _Counters *Counters;
+extern struct _Debug *Debug;
 
-bool Global_Death;
+extern bool Global_Death;
 
 void Input_Named_Pipe_Init(void)
 {

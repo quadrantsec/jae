@@ -49,11 +49,11 @@
 
 
 
-struct _Rules *Rules;
-struct _Debug *Debug;
-struct _Config *Config;
-struct _Counters *Counters;
-struct _Bluedot_Skip *Bluedot_Skip;
+extern struct _Rules *Rules;
+extern struct _Debug *Debug;
+extern struct _Config *Config;
+extern struct _Counters *Counters;
+extern struct _Bluedot_Skip *Bluedot_Skip;
 
 struct _Bluedot_Cat_List *BluedotCatList = NULL;
 

@@ -41,7 +41,7 @@ pthread_mutex_t InputWorkMutex=PTHREAD_MUTEX_INITIALIZER;
 
 struct _Input_Batch *Input_Batch = NULL;
 
-struct _Config *Config;
+extern struct _Config *Config;
 
 uint16_t batch_count = 0;
 uint16_t processor_message_slot = 0;

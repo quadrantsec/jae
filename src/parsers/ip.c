@@ -43,8 +43,8 @@
 #include "parsers/json.h"
 #include "parsers/ip.h"
 
-struct _Rules *Rules;
-struct _Debug *Debug;
+extern struct _Rules *Rules;
+extern struct _Debug *Debug;
 
 
 uint16_t Parse_IP( struct _JSON_Key_String *JSON_Key_String, uint16_t json_count, uint32_t rule_position )

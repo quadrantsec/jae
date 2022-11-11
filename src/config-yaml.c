@@ -66,9 +66,9 @@
 libyaml is required.  Get it from your distribution repo or http://pyyaml.org/wiki/LibYAML
 #endif
 
-struct _Config *Config;
-struct _Counters *Counters;
-struct _Debug *Debug;
+extern struct _Config *Config;
+extern struct _Counters *Counters;
+extern struct _Debug *Debug;
 
 struct _Var *Var = NULL;
 
