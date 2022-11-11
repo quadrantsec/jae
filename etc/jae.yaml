@@ -1,7 +1,7 @@
 %YAML 1.1
 ---
 
-#  ,-._,-.  Sagan-NG configuration file [http://sagan.quadrantsec.com]
+#  ,-._,-.  JAE configuration file [https://quadrantsec.com]
 #  \/)"(\/  Champ Clark III & The Quadrant Infosec Team: http://quadrantsec.com
 #   (_o_)   Copyright (C) 2020 Quadrant Information Security., et al.
 #   /   \/)
@@ -50,7 +50,7 @@ processors:
 
   bluedot:
 
-    enabled: yes
+    enabled: no
     device-id: "JAE Engine"
     timeout: 30		# Minutes
     categories: "/usr/local/etc/jae-rules/bluedot-categories.json"
@@ -79,8 +79,7 @@ input:
   named-pipe:
 
     enabled: yes
-    #named-pipe: "/var/sagan/test.fifo"
-    named-pipe: "/var/sagan/sagan.fifo"
+    named-pipe: "/var/jae/jae.fifo"
     size: 1048576
     chown: yes
 
@@ -99,4 +98,3 @@ rule-files:
 
   - $RULE_PATH/jae-test.json
 
-    
