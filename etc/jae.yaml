@@ -41,9 +41,9 @@ configuration:
     cluster-name: "$CLUSTER_NAME"
     max-threads: 5
     batch-size: 1
-    classifications: "/home/champ/code/jae/etc/classifications.json"
-    lockfile: "/var/run/sagan_ng/sagan.pid"
-    normalize: "/home/champ/test/normalize.rulebase"
+    classifications: "/usr/local/etc/jae-rules/classifications.json"
+    lockfile: "/var/run/jae.pid"
+    normalize: "/usr/local/etc/jae-rules/normalize.rulebase"
     parse-ip: "pre"	# "pre" or "post" analysis
 
 processors:
@@ -97,6 +97,6 @@ output:
 
 rule-files:
 
-  - /home/champ/test/new-test.json
+  - $RULE_PATH/jae-test.json
 
     
