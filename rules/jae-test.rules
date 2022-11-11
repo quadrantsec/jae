@@ -1,0 +1,35 @@
+# {"signature_id": 500015, "revision": 1, "description":"[OPENSSH] PAM Authentication failure - Brute force [10/1]", "classification": "suspicious-login","search":{"0": { "string": "authenticaton failure", "key":".MESSAGE", "type":"contains", "case":"true" }, "1":{"string": "frank", "key":".MESSAGE", "type":"exact", "case":"false"},"2":{"pcre": "/frank/i", "key": ".MESSAGE"}, "3":{"meta": "a string %meta% here", "values": [ "frank", "bob", "steve"], "key":".MESSAGE", "type":"contains", "case":"true" } }, "parse_source_ip": { "position": 1, "create_key": ".ip_src", "key": ".MESSAGE" }, "normalize": ".MESSAGE", "xbits": { "set": "brute_force", "track": ".ip_src", "expire":"21600" }, "after": { "track": ".ip_src", "count": 10, "seconds": 300 }, "threshold": { "type": "limit", "track": ".ip_src", "count": 1, "seconds": 300 }, "reference": [ "http://somesite1.com", "http://somesite2.com" ], "add_key": { "port": 22, "created":"Brian", "playbook":"some thing here" }, "display_mapping": { "ip_source": ".ip_src", "username":".usr", "port":".port" } }
+
+
+#{"signature_id": 500015, "revision": 1, "description":"Test Rule 1", "classification": "suspicious-login","search": {"0": { "string": "champtest", "key":".MESSAGE", "type":"exact", "case":"false" }}, "exclude": {"0": { "string": ["list","of","things", "what |3a 3a 3a 3b 3c|about|3a 3b 3a| this"], "key":".MESSAGE", "type":"contains", "case":"false" }}}
+
+#{"signature_id": 500015, "revision": 1, "description":"Test Rule 1", "classification": "suspicious-login","search": {"0": { "mask": "This is a %JAE% mask", "string": ["champtest1","champtest2"], "key":".MESSAGE", "type":"contains", "case":"false" }}, "exclude": {"0": {"string": ["excludeme1","excludeme2|3a|"], "key":".MESSAGE", "type":"contains", "case":"false"}}}
+
+#{"signature_id": 500016, "revision": 1, "description":"Test Rule 2", "classification": "suspicious-login","search": {"0": { "string": "champwee", "key":".MESSAGE", "type":"exact", "case":"false" }}}
+
+#{"signature_id": 500016, "revision": 1, "description":"Test Rule 2", "classification": "suspicious-login","search": {"0": { "string": "champwee", "key":".MESSAGE", "type":"contains", "case":"false" }, "1": { "string": "champwoo", "key":".MESSAGE", "type":"contains", "case":"false" }}}
+
+
+#{"signature_id": 500016, "revision": 1, "description":"Test Rule 2", "classification": "suspicious-login","pcre": {"0": { "expression": "/Failed/i", "key":".MESSAGE" }, "1": { "expression": "/password/i", "key":".MESSAGE" } }, "add_key": { "author":"Champ Clark", "date": "20201203"} }
+
+#{"signature_id": 500015, "revision": 1, "description":"Test Rule 2", "classification": "suspicious-login","pcre": {"0": { "expression": "/Failed/i", "key":".MESSAGE" } }, "search": {"0": { "string": "champwee", "key":".MESSAGE", "type":"contains", "case":"false" } } }
+
+#{"signature_id": 500016, "revision": 1, "description":"Test Rule 2", "classification": "suspicious-login","pcre": {"0": { "expression": "/Failed/i", "key":".MESSAGE" } }, "add_key": { "author":"Champ Clark", "date": "20201203", "playbook": "This could be a really long playbook or something"} }
+
+# "after": { "0": { "track": [".SOURCEIP","."TAG"], "count": 5, "seconds": 300 }
+#                                ^^ and
+# "after": { "1": { "track": ".bob", "count": 5, "seconds": 300 }
+
+# bluedot: type ip_reputation, track all, mdate_effective_period 1 months, Malicious,Tor,Proxy;
+
+# mdate_effective_period 1 months,
+# cdate_effective_period 1 day, 
+
+# type "ip", "hash", "url", "filenae", "ja3" (whatever its called now)
+# "bluedot": { "0": { "key":".SRC_IP", "type":"ip", "alert":"true" } } }
+# "geoip": { "0": { "key": ".SRC_IP", "store":".SRC_GEOIP" }
+# "geoip": { "0": { "key": ".SRC_IP", "store": "SRC_COUNTRY", "value": "country,city" } } 
+
+{ "signature_id": 500016, "revision": 1, "description":"Test Rule 2", "classification": "suspicious-login", "normalize": { "0": { "key": ".MESSAGE" } },"pcre": {"0": { "expression": "/Fail/i", "key":".MESSAGE" } }, "add_key": { "jae.author":"Champ Clark", "jae.date": "20201203", "jae.playbook": "This could be a really long playbook or something", "field":"Outside of the next!" }, "parse_ip": { "0": { "key":".MESSAGE", "store":".SRC_IP", "position":"1" }, "1": { "key":".SOURCEIP", "store":".DEST_IP", "position":"1" } }, "bluedot": { "0": { "key":".SRC_IP", "type":"ip", "category":"Honeypot", "alert":"true" } } } 
+
+#{ "signature_id": 500016, "revision": 1, "description":"Test Rule 2", "classification": "suspicious-login", "normalize": { "0": { "key": ".MESSAGE" } },"pcre": {"0": { "expression": "/Fail/i", "key":".MESSAGE" } }, "add_key": { "jae.author":"Champ Clark", "jae.date": "20201203", "jae.playbook": "This could be a really long playbook or something", "field":"Outside of the next!" }, "parse_ip": { "0": { "key":".MESSAGE", "store":".SRC_IP", "position":"1" }, "1": { "key":".SOURCEIP", "store":".DEST_IP", "position":"1" } } } 
