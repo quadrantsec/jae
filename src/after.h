@@ -1,6 +1,5 @@
 
 
-
 typedef struct _After _After;
 struct _After
 {

@@ -49,6 +49,8 @@
 #include "counters.h"
 #include "debug.h"
 
+#include "util-json.h"
+
 extern struct _Counters *Counters;
 extern struct _Debug *Debug;
 extern struct _Counters *Counters;

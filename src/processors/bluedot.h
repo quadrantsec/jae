@@ -1,4 +1,5 @@
 
+#include <netinet/in.h>
 
 #define 	BLUEDOT_TYPE_IP		1
 #define		BLUEDOT_TYPE_HASH	2

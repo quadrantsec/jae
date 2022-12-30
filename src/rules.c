@@ -46,6 +46,10 @@
 #include "classifications.h"
 
 #include "parsers/json.h"
+#include "parsers/strstr-asm/strstr-hook.h"
+
+#include "util-base64.h"
+
 
 #include "processors/bluedot.h"
 
@@ -384,7 +388,7 @@ void Load_Ruleset( const char *ruleset )
 
                                                     /* Is search/exclude case sensitive? */
 
-                                                    snprintf(tmpkey, MAX_JSON_KEY, ".%s.%d.case", s_e, a);
+                                                    snprintf(tmpkey, MAX_JSON_KEY, ".%s.%d.case_sensitive", s_e, a);
                                                     tmpkey[ sizeof(tmpkey) - 1] = '\0';
 
                                                     if ( !strcmp( JSON_Key_String[k].key, tmpkey ) )
@@ -399,7 +403,7 @@ void Load_Ruleset( const char *ruleset )
                                                                 {
                                                                     free(JSON_Key_String);
                                                                     fclose(rulesfile);
-                                                                    JAE_Log(ERROR, "[%s, line %d] Error: Expected a 'search' 'case' of 'true' or 'false'  but got '%s' in %s at line %d.  Abort.", __FILE__, __LINE__, JSON_Key_String[i].json, ruleset, line_count);
+                                                                    JAE_Log(ERROR, "[%s, line %d] Error: Expected a 'search' 'case_sensitive' of 'true' or 'false'  but got '%s' in %s at line %d.  Abort.", __FILE__, __LINE__, JSON_Key_String[i].json, ruleset, line_count);
                                                                 }
 
                                                         }
@@ -587,7 +591,7 @@ void Load_Ruleset( const char *ruleset )
 
 #ifdef PCRE_HAVE_JIT
 
-                                    /* If we haeve PCRE JIT,  use it */
+                                    /* If we have PCRE JIT,  use it */
 
                                     if ( Config->pcre_jit == true )
                                         {

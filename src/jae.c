@@ -3,9 +3,19 @@
 Notes:
 
 When using "exact", leading spaces get stripped.  So "   champtest" when searching
-for "champtest" will get a hit.  But "this is a champtest" still won't
+for "champtest" will get a hit.  But "this is a champtest" still won't.
+
+Next in the add_key stuff? Maybe 
+
+the jae stuff should be a new next.  It can be appended to the end.  In order to add data to the 
+original data,  , maybe a different keyword?
+
+"jae.receive_timestamp": "2022-12-28T23:07:37.905672-0500", "jae.sensor_name": "Sensor_Name", "jae.cluster_name": "Cluster_Name", "jae.signature_id": 500016, "jae.revision": 1, "jae.description": "Test Rule 2", "jae.classification": "suspicious-login", "jae.classification_desc": "An attempted login using a suspicious username was detected", "jae.signature": "eyAic2lnbmF0dXJlX2lkIjogNTAwMDE2LCAicmV2aXNpb24iOiAxLCAiZGVzY3JpcHRpb24iOiJUZXN0IFJ1bGUgMiIsICJjbGFzc2lmaWNhdGlvbiI6ICJzdXNwaWNpb3VzLWxvZ2luIiwgIm5vcm1hbGl6ZSI6IHsgIjAiOiB7ICJrZXkiOiAiLk1FU1NBR0UiIH0gfSwicGNyZSI6IHsiMCI6IHsgImV4cHJlc3Npb24iOiAiL0ZhaWwvaSIsICJrZXkiOiIuTUVTU0FHRSIgfSB9LCAiYWRkX2tleSI6IHsgImphZS5hdXRob3IiOiJDaGFtcCBDbGFyayIsICJqYWUuZGF0ZSI6ICIyMDIwMTIwMyIsICJqYWUucGxheWJvb2siOiAiVGhpcyBjb3VsZCBiZSBhIHJlYWxseSBsb25nIHBsYXlib29rIG9yIHNvbWV0aGluZyIsICJmaWVsZCI6Ik91dHNpZGUgb2YgdGhlIG5leHQhIiB9LCAicGFyc2VfaXAiOiB7ICIwIjogeyAia2V5IjoiLk1FU1NBR0UiLCAic3RvcmUiOiIuU1JDX0lQIiwgInBvc2l0aW9uIjoiMSIgfSwgIjEiOiB7ICJrZXkiOiIuU09VUkNFSVAiLCAic3RvcmUiOiIuREVTVF9JUCIsICJwb3NpdGlvbiI6IjEiIH0gfSB9IA==", "jae.author": "Champ Clark", "jae.date": "20201203", "jae.playbook": "This could be a really long playbook or something", "field": "Outside of the next!" }
+
+ 
 
 */
+
 
 
 
@@ -66,6 +76,7 @@ for "champtest" will get a hit.  But "this is a champtest" still won't
 #include "classifications.h"
 #include "config-yaml.h"
 
+#include "util-tcpip.h"
 
 #include "parsers/json.h"
 #include "parsers/normalize.h"
@@ -75,6 +86,10 @@ for "champtest" will get a hit.  But "this is a champtest" still won't
 
 #include "output.h"
 #include "output-plugins/file.h"
+
+#ifdef WITH_BLUEDOT
+#include "processors/bluedot.h"
+#endif
 
 struct _Config *Config = NULL;
 struct _Counters *Counters = NULL;
@@ -371,6 +386,8 @@ int main(int argc, char **argv)
 
     CheckLockFile();
 
+#ifdef WITH_BLUEDOT
+
     if ( Config->processor_bluedot_flag == true )
         {
 
@@ -390,6 +407,7 @@ int main(int argc, char **argv)
 
         }
 
+#endif 
 
     /* Init _Output_ */
 

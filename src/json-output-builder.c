@@ -19,6 +19,13 @@
 ** Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+
+/* RETHINGING THIS
+
+   JSON_Key_String[0].json is lwyaas the "orignal json".  Build a new "jae" nest and apend it to the
+   original - don't rebuild form the array!  - matter of fact  just pass JSON_Key_String[0].json as a
+   single string!  not the array,  add "jae" content to it */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"             /* From autoconf */
 #endif
@@ -37,6 +44,7 @@
 
 #include "rules.h"
 #include "util-time.h"
+#include "util-json.h"
 
 #include "parsers/json.h"
 
@@ -46,52 +54,48 @@ extern struct _Config *Config;
 void Output_JSON_Builder ( struct _JSON_Key_String *JSON_Key_String, uint16_t json_count, uint32_t rule_position, char *str, size_t size)
 {
 
-    struct json_object *jobj;
+    struct json_object *jobj_jae;
+
+    char tmp[MAX_JSON_SIZE] = { 0 }; 
+    char tmp2[MAX_JSON_SIZE] = { 0 }; 
+
     uint16_t i = 0;
+    uint32_t last_bracket = 0;
+
     struct timeval timestamp;
-    char receive_timestamp[64] = { 0 };
+    char alert_timestamp[64] = { 0 };
 
-    gettimeofday(&timestamp, 0);       /* Store event time as soon as we get it */
-    CreateIsoTimeString(&timestamp, receive_timestamp, sizeof(receive_timestamp));
+    gettimeofday(&timestamp, 0);       /* Store event alert time */
+    CreateIsoTimeString(&timestamp, alert_timestamp, sizeof(alert_timestamp));
 
-    jobj = json_object_new_object();
+    jobj_jae = json_object_new_object();
 
-    for (i = 0; i < json_count; i++ )
-        {
-
-            if ( JSON_Key_String[i].json[0] != '{' ) //&& JSON_Key_String[i].key[0] == '\0' )
-                {
-                    json_object *j = json_object_new_string( JSON_Key_String[i].json );
-                    json_object_object_add(jobj, JSON_Key_String[i].key+1, j);
-                }
-        }
-
-    json_object *jreceive_timestamp = json_object_new_string( receive_timestamp );
-    json_object_object_add(jobj, "jae.receive_timestamp", jreceive_timestamp);
+    json_object *jalert_timestamp = json_object_new_string( alert_timestamp );
+    json_object_object_add(jobj_jae, "alert_timestamp", jalert_timestamp);
 
     json_object *jsensor_name = json_object_new_string( Config->sensor_name );
-    json_object_object_add(jobj, "jae.sensor_name", jsensor_name);
+    json_object_object_add(jobj_jae, "sensor_name", jsensor_name);
 
     json_object *jcluster_name = json_object_new_string( Config->cluster_name );
-    json_object_object_add(jobj, "jae.cluster_name", jcluster_name);
+    json_object_object_add(jobj_jae, "cluster_name", jcluster_name);
 
     json_object *jsignature_id = json_object_new_int64( Rules[rule_position].signature_id );
-    json_object_object_add(jobj, "jae.signature_id", jsignature_id);
+    json_object_object_add(jobj_jae, "signature_id", jsignature_id);
 
     json_object *jrevision = json_object_new_int( Rules[rule_position].revision );
-    json_object_object_add(jobj, "jae.revision", jrevision);
+    json_object_object_add(jobj_jae, "revision", jrevision);
 
     json_object *jdescription = json_object_new_string( Rules[rule_position].description );
-    json_object_object_add(jobj, "jae.description", jdescription);
+    json_object_object_add(jobj_jae, "description", jdescription);
 
     json_object *jclassification = json_object_new_string( Rules[rule_position].classification );
-    json_object_object_add(jobj, "jae.classification", jclassification);
+    json_object_object_add(jobj_jae, "classification", jclassification);
 
     json_object *jclassification_desc = json_object_new_string( Rules[rule_position].classification_desc );
-    json_object_object_add(jobj, "jae.classification_desc", jclassification_desc);
+    json_object_object_add(jobj_jae, "classification_desc", jclassification_desc);
 
     json_object *jsignature = json_object_new_string( Rules[rule_position].b64_signature_triggered );
-    json_object_object_add(jobj, "jae.signature", jsignature);
+    json_object_object_add(jobj_jae, "signature", jsignature);
 
     if ( Rules[rule_position].add_key_count > 0 )
         {
@@ -107,25 +111,24 @@ void Output_JSON_Builder ( struct _JSON_Key_String *JSON_Key_String, uint16_t js
                     snprintf(add_key_key_tmp, MAX_ADD_KEY_SIZE, "%s", Rules[rule_position].add_key_key[i]);
 
                     json_object *j = json_object_new_string( Rules[rule_position].add_key_value[i] );
-                    json_object_object_add(jobj, add_key_key_tmp, j);
+                    json_object_object_add(jobj_jae, add_key_key_tmp, j);
 
                 }
 
-
-
         }
 
+    strlcpy(tmp, JSON_Key_String[0].json, MAX_JSON_SIZE); 
+    last_bracket = Last_Bracket_Position( tmp ); 
+    tmp[ last_bracket ] = '\0';
 
+    snprintf(tmp2, MAX_JSON_SIZE, ", \"jae\": %s", json_object_to_json_string(jobj_jae));
+    strlcat(tmp, tmp2, MAX_JSON_SIZE);
 
+    strlcat(tmp, " }", MAX_JSON_SIZE);
 
+    snprintf( str, size, "%s", tmp );
 
+    json_object_put(jobj_jae);
 
-
-    snprintf( str, size, "%s", json_object_to_json_string(jobj) );
-
-    json_object_put(jobj);
 
 }
-
-
-

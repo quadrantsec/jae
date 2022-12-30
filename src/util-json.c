@@ -55,3 +55,22 @@ bool Validate_JSON_Simple ( const char *json )
 
     return(true);
 }
+
+uint32_t Last_Bracket_Position( const char *json )
+{
+
+uint32_t len = strlen( json );
+uint32_t i = 0; 
+
+for ( i = len; i > 0; i-- )
+	{
+	if ( json[i] == '}' )
+		{
+		return ( len-1 ); 
+		}
+
+	}
+
+return(0);  /* Should NEVER get here,  throw error? */
+
+}

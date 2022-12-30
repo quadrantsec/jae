@@ -53,6 +53,11 @@
 #include "debug.h"
 #include "rules.h"
 #include "classifications.h"
+#include "lockfile.h"
+
+#include "util-tcpip.h"
+
+#include "parsers/json.h"
 
 #include "processors/bluedot.h"
 

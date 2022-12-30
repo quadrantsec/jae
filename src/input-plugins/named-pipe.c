@@ -115,7 +115,7 @@ void Input_Named_Pipe(void)
 
                     clearerr( fd );
 
-                    while ( fgets( input, 1024, fd) != NULL )
+                    while ( fgets( input, MAX_JSON_SIZE, fd) != NULL )
                         {
 
                             __atomic_add_fetch(&Counters->input_received, 1, __ATOMIC_SEQ_CST);

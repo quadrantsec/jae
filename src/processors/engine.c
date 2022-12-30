@@ -45,6 +45,11 @@
 #include "parsers/search.h"
 #include "parsers/pcre.h"
 #include "parsers/normalize.h"
+#include "parsers/ip.h"
+#include "parsers/search.h"
+
+#include "after.h"
+#include "output.h"
 
 #include "processors/engine.h"
 #include "processors/bluedot.h"

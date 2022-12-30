@@ -152,7 +152,7 @@ uint16_t Normalize( struct _JSON_Key_String *JSON_Key_String, uint16_t json_coun
                                     if ( JSON_Key_String_Normalize[b].json[0] != '{' )
                                         {
 
-                                            snprintf(JSON_Key_String[count].key, MAX_JSON_KEY, ".normalize%s", JSON_Key_String_Normalize[b].key);
+                                            snprintf(JSON_Key_String[count].key, MAX_JSON_KEY, ".jae.normalize%s", JSON_Key_String_Normalize[b].key);
                                             strlcpy(JSON_Key_String[count].json, JSON_Key_String_Normalize[b].json, MAX_JSON_VALUE);
 
                                             count++;

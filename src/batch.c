@@ -68,6 +68,9 @@ void Batch_Init( void )
 void Batch( const char *input )
 {
 
+//    struct timeval timestamp;
+//    char batch_timestamp[64] = { 0 };
+
     if ( batch_count >= Config->batch_size )
         {
 
@@ -92,6 +95,9 @@ void Batch( const char *input )
         }
 
     strlcpy(Input_Batch[batch_count].input, input, MAX_JSON_SIZE);
+
+//    gettimeofday(&timestamp, 0);       /* Store event batch time */
+//    CreateIsoTimeString(&timestamp, Input_Batch[batch_count].timestamp, sizeof(Input_Batch[batch_count].timestamp));
 
     __atomic_add_fetch(&batch_count, 1, __ATOMIC_SEQ_CST);
 //    printf("Batch is at: %d\n", batch_count);

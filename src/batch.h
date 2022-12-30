@@ -23,6 +23,7 @@
 typedef struct _Input_Batch _Input_Batch;
 struct _Input_Batch
 {
+//    char timestamp[64];
     char input[MAX_JSON_SIZE];
 };
 

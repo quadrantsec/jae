@@ -19,5 +19,5 @@
 ** Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-//bool Search( uint32_t rule_position, uint16_t json_count, struct _JSON_Key_String *JSON_Key_String);
+bool Search( uint32_t rule_position, uint8_t s_position, char *json );
 

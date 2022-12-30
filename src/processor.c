@@ -51,7 +51,6 @@ extern uint16_t batch_count;
 extern uint16_t processor_message_slot;
 extern uint16_t processor_running_threads;
 
-
 extern pthread_cond_t InputDoWork;
 extern pthread_mutex_t InputWorkMutex;
 
@@ -102,7 +101,7 @@ void Processor (void)
                     /* DEBUG STUFF HERE */
 
                     strlcpy(Input_Batch_LOCAL[i].input, Input_Batch[i].input, MAX_JSON_SIZE);
-
+//		    strlcpy(Input_Batch_LOCAL[i].timestamp, Input_Batch[i].timestamp, sizeof(Input_Batch[i].timestamp));
                 }
 
             pthread_mutex_unlock(&InputWorkMutex);

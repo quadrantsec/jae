@@ -32,8 +32,10 @@
 #include <pthread.h>
 #include <json.h>
 #include <netinet/in.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 #include <errno.h>
-
+#include <unistd.h>
 
 #include "jae.h"
 #include "jae-defs.h"
@@ -42,6 +44,8 @@
 #include "debug.h"
 #include "counters.h"
 #include "util-time.h"
+#include "util-json.h"
+#include "util-tcpip.h"
 
 #include "parsers/json.h"
 
@@ -804,7 +808,7 @@ int Bluedot_Clean_Queue ( const char *json, uint8_t type )
     if ( type == BLUEDOT_TYPE_IP && Config->processor_bluedot_ip_queue > 0 )
         {
 
-            IP_2_Bit(json, ip_convert);
+            IP_2_Bit( (char*)json, ip_convert);
 
             for (i=0; i<Config->processor_bluedot_ip_queue; i++)
                 {
