@@ -85,6 +85,15 @@ void Processor (void)
 
     memset(Input_Batch_LOCAL, 0, sizeof(struct _Input_Batch));
 
+    for ( i = 0; i < Config->batch_size; i++ )
+        {
+//      printf("init: %d\n", i);
+        Input_Batch_LOCAL[i].input = malloc(MAX_JSON_SIZE);
+        memset(Input_Batch_LOCAL[i].input, 0, MAX_JSON_SIZE);
+//        printf("1: %d\n", sizeof(Input_Batch[i].input));
+        }
+
+
     while (Global_Death == false )
         {
 
@@ -100,7 +109,8 @@ void Processor (void)
 
                     /* DEBUG STUFF HERE */
 
-                    strlcpy(Input_Batch_LOCAL[i].input, Input_Batch[i].input, MAX_JSON_SIZE);
+//			printf("size of: %d\n", sizeof( Input_Batch_LOCAL[i].input ) );
+                    strlcpy(Input_Batch_LOCAL[i].input, Input_Batch[i].input, Config->max_json_size);
 //		    strlcpy(Input_Batch_LOCAL[i].timestamp, Input_Batch[i].timestamp, sizeof(Input_Batch[i].timestamp));
                 }
 

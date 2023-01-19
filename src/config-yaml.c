@@ -116,6 +116,11 @@ void Load_YAML_Config( const char *yaml_file )
     char *dir = NULL;
     char *filename = NULL;
 
+    /* Defaults */
+
+    Config->max_json_size = MAX_JSON_SIZE;
+
+
     if (stat(yaml_file, &filecheck) != false )
         {
             JAE_Log(ERROR, "[%s, line %d] The configuration file '%s' cannot be found! Abort!", __FILE__, __LINE__, yaml_file);
@@ -511,6 +516,11 @@ void Load_YAML_Config( const char *yaml_file )
                                 {
                                     strlcpy(Config->cluster_name, var_to_value, MAX_CLUSTER_NAME);
                                     Remove_Return(Config->cluster_name);
+                                }
+
+                            else if ( !strcmp(last_pass, "max-json-size" ) )
+                                {
+				      Config->max_json_size = atol(var_to_value);
                                 }
 
                             else if ( !strcmp(last_pass, "parse-ip" ) )

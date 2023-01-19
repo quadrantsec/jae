@@ -60,6 +60,7 @@ void Output_JSON_Builder ( struct _JSON_Key_String *JSON_Key_String, uint16_t js
     char tmp2[MAX_JSON_SIZE] = { 0 }; 
 
     uint16_t i = 0;
+    uint16_t a = 0; 
     uint32_t last_bracket = 0;
 
     struct timeval timestamp;
@@ -117,6 +118,29 @@ void Output_JSON_Builder ( struct _JSON_Key_String *JSON_Key_String, uint16_t js
 
         }
 
+ 
+    for ( i = 0; i < json_count; i++ )
+	{
+
+	if ( JSON_Key_String[i].key[0] == '.' && JSON_Key_String[i].key[1] == 'j' && 
+	     JSON_Key_String[i].key[2] == 'a' && JSON_Key_String[i].key[3] == 'e' && 
+	     JSON_Key_String[i].key[4] == '.' )
+		{
+
+		for ( a = 5; a < strlen(JSON_Key_String[i].key); a++ )
+			{
+			tmp[a-5] = JSON_Key_String[i].key[a]; 
+			}
+
+                json_object *j = json_object_new_string( JSON_Key_String[i].json );
+                json_object_object_add(jobj_jae, tmp, j);
+
+		}
+
+
+	}
+
+   
     strlcpy(tmp, JSON_Key_String[0].json, MAX_JSON_SIZE); 
     last_bracket = Last_Bracket_Position( tmp ); 
     tmp[ last_bracket ] = '\0';

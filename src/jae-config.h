@@ -51,6 +51,7 @@ struct _Config
 
     uint32_t		max_threads;
     unsigned char	batch_size;
+    uint32_t		max_json_size;
     char	        classifications_file[MAX_PATH];
     char		reference_file[MAX_PATH];
     char		normalize_file[MAX_PATH];

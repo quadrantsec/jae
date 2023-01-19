@@ -53,7 +53,10 @@ uint16_t processor_running_threads = 0;
 void Batch_Init( void )
 {
 
-    Input_Batch = malloc(Config->max_threads * sizeof(_Input_Batch));
+uint16_t i = 0; 
+
+
+    Input_Batch = malloc(Config->max_threads * sizeof(_Input_Batch) );
 
     if ( Input_Batch == NULL )
         {
@@ -61,6 +64,14 @@ void Batch_Init( void )
         }
 
     memset(Input_Batch, 0, sizeof(struct _Input_Batch));
+
+    for ( i = 0; i < Config->batch_size; i++ )
+	{
+//	printf("init: %d\n", i);
+	Input_Batch[i].input = malloc( Config->max_json_size ); 
+	memset(Input_Batch[i].input, 0, Config->max_json_size );
+//        printf("1: %d\n", sizeof(Input_Batch[i].input));
+	}
 
 }
 
@@ -74,11 +85,11 @@ void Batch( const char *input )
     if ( batch_count >= Config->batch_size )
         {
 
-//	printf("Send to batch!\n");
+	printf("Send to batch!\n");
 
             if ( processor_message_slot < Config->max_threads )
                 {
-//                    printf("Send work\n");
+                    printf("Send work\n");
 
                     pthread_mutex_lock(&InputWorkMutex);
 
@@ -94,12 +105,14 @@ void Batch( const char *input )
 
         }
 
-    strlcpy(Input_Batch[batch_count].input, input, MAX_JSON_SIZE);
+    printf("INPUT: %s\n", input);
+
+    strlcpy(Input_Batch[batch_count].input, input, Config->max_json_size);
 
 //    gettimeofday(&timestamp, 0);       /* Store event batch time */
 //    CreateIsoTimeString(&timestamp, Input_Batch[batch_count].timestamp, sizeof(Input_Batch[batch_count].timestamp));
 
     __atomic_add_fetch(&batch_count, 1, __ATOMIC_SEQ_CST);
-//    printf("Batch is at: %d\n", batch_count);
+    printf("Batch is at: %d\n", batch_count);
 
 }
