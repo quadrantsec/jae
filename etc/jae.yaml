@@ -41,6 +41,7 @@ configuration:
     cluster-name: "$CLUSTER_NAME"
     max-threads: 5
     batch-size: 1
+    max-json-size: 67108864  # make this gb/mb/etc
     classifications: "/usr/local/etc/jae-rules/classifications.json"
     lockfile: "/var/run/jae.pid"
     normalize: "/usr/local/etc/jae-rules/normalize.rulebase"
